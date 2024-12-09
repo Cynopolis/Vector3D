@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <cmath>
+#include <type_traits>
 
 template <typename Type>
 class V3D{
