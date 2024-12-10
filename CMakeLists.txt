@@ -29,6 +29,7 @@ set_target_properties(Matrix
     LINKER_LANGUAGE CXX
 )
 
-target_include_directories(Matrix PUBLIC
-    include
+target_include_directories(Matrix 
+    PUBLIC
+    .
 )
