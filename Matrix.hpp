@@ -6,12 +6,11 @@
 #include <cstdlib>
 #include <type_traits>
 
-
 template <uint8_t rows, uint8_t columns> class Matrix {
 public:
   Matrix();
 
-  Matrix(const std::array<float, columns> &array);
+  explicit Matrix(const std::array<float, columns> &array);
 
   /**
    * @brief Element-wise matrix addition
@@ -76,7 +75,7 @@ public:
    * @brief Calculate the eigenvalues for a square matrix
    * @param result a buffer to store the result into
    */
-  void EigenValues(Matrix<rows, 1> &result) const;
+  void EigenValues(Matrix<rows, 1> &eigenvalues) const;
 
   /**
    * @brief Element-wise multiply the two matrices
@@ -110,7 +109,7 @@ public:
    */
   std::array<float, columns> &operator[](uint8_t row_index) const;
 
-  void operator=(Matrix<rows, columns> &other);
+  Matrix<rows, columns> &operator=(const Matrix<rows, columns> &other);
 
   /**
    * @brief Get a row from the matrix
@@ -174,10 +173,10 @@ template <uint8_t rows, uint8_t columns>
 Matrix<rows, columns>::Matrix(const std::array<float, columns> &array) {
   for (uint8_t row_idx{0}; row_idx < rows; row_idx++) {
     for (uint8_t column_idx{0}; column_idx < columns; column_idx++) {
-      uint16_t i =
+      uint16_t array_idx =
           static_cast<uint16_t>(row_idx) + static_cast<uint16_t>(column_idx);
-      if (i < array.size()) {
-        this->Get(row_idx, column_idx) = array[i];
+      if (array_idx < array.size()) {
+        this->Get(row_idx, column_idx) = array[array_idx];
       } else {
         this->Get(row_idx, column_idx) = 0;
       }
@@ -311,7 +310,8 @@ void Matrix<rows, columns>::EigenValues(Matrix<rows, 1> &eigenvalues) const {
   Matrix<rows, 1> Av{};
   Matrix<rows, 1> z{};
 
-  float d = 0.0, d_old = 0.0;
+  float d = 0.0;
+  float d_old = 0.0;
   constexpr float convergence_value{1e-6};
   constexpr uint16_t max_iterations{500};
 
@@ -344,7 +344,7 @@ void Matrix<rows, columns>::EigenValues(Matrix<rows, 1> &eigenvalues) const {
     }
 
     /* Check for convergence */
-    if (fabs(d - d_old) < convergence_value) {
+    if (std::fabs(d - d_old) < convergence_value) {
       eigenvalues[0][k] = d;
       k++;
       d = 0.0;
@@ -439,12 +439,12 @@ void Matrix<rows, columns>::minorMatrix(Matrix<rows - 1, columns - 1> &result,
 
   for (uint8_t row_iter{0}; row_iter < rows; row_iter++) {
     for (uint8_t column_iter{0}; column_iter < columns; column_iter++) {
-      uint16_t i =
+      uint16_t array_idx =
           static_cast<uint16_t>(row_iter) + static_cast<uint16_t>(column_iter);
       if (row_iter == row_idx || column_iter == column_idx) {
         continue;
       }
-      subArray[i] = this->Get(row_iter, column_iter);
+      subArray[array_idx] = this->Get(row_iter, column_iter);
     }
   }
 
@@ -455,8 +455,8 @@ template <uint8_t rows, uint8_t columns>
 void Matrix<rows, columns>::adjugate(Matrix<rows, columns> &result) const {
   for (uint8_t row_iter{0}; row_iter < rows; row_iter++) {
     for (uint8_t column_iter{0}; column_iter < columns; column_iter++) {
-      float sign = ((row_iter + 1) % 2) ? -1 : 1;
-      sign *= ((column_iter + 1) % 2) ? -1 : 1;
+      float sign = ((row_iter + 1) % 2) == 0 ? -1 : 1;
+      sign *= ((column_iter + 1) % 2) == 0 ? -1 : 1;
       result.Get(row_iter, column_iter) =
           this->Get(row_iter, column_iter) * sign;
     }
