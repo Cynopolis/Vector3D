@@ -15,6 +15,7 @@ public:
    */
   Matrix(const std::array<float, rows*columns> &array);
 
+  // TODO: Figure out how to do this
   /**
    * @brief Initialize a matrix directly with any number of arguments
    */
@@ -152,6 +153,8 @@ public:
    */
   constexpr uint8_t GetColumnSize() { return columns; }
 
+  void ToString(std::string & stringBuffer) const;
+
 private:
   /**
    * @brief take the dot product of the two vectors
@@ -179,19 +182,18 @@ private:
   void normalize(Matrix<rows, columns> &result) const;
 
   constexpr bool isSquare() { return rows == columns; }
+
+  void setMatrixToArray(const std::array<float, rows*columns> & array);
+
   std::array<std::array<float, columns>, rows> matrix;
 };
 
-template <uint8_t rows, uint8_t columns> Matrix<rows, columns>::Matrix() {
-  this->zeroMatrix();
-}
-
 template <uint8_t rows, uint8_t columns>
-Matrix<rows, columns>::Matrix(const std::array<float, rows*columns> &array) {
+void Matrix<rows, columns>::setMatrixToArray(const std::array<float, rows*columns> & array){
   for (uint8_t row_idx{0}; row_idx < rows; row_idx++) {
     for (uint8_t column_idx{0}; column_idx < columns; column_idx++) {
       uint16_t array_idx =
-          static_cast<uint16_t>(row_idx) + static_cast<uint16_t>(column_idx);
+          static_cast<uint16_t>(row_idx) * static_cast<uint16_t>(columns) + static_cast<uint16_t>(column_idx);
       if (array_idx < array.size()) {
         this->matrix[row_idx][column_idx] = array[array_idx];
       } else {
@@ -201,15 +203,30 @@ Matrix<rows, columns>::Matrix(const std::array<float, rows*columns> &array) {
   }
 }
 
+template <uint8_t rows, uint8_t columns> Matrix<rows, columns>::Matrix() {
+  this->zeroMatrix();
+}
+
+template <uint8_t rows, uint8_t columns>
+Matrix<rows, columns>::Matrix(const std::array<float, rows*columns> &array) {
+  this->setMatrixToArray(array);
+}
+
 // template <uint8_t rows, uint8_t columns>
 // template <typename... Args>
 // Matrix<rows, columns>::Matrix(Args&&... args){
   
 //   // Initialize a std::array with the arguments
-//   std::array<float, sizeof...(args)> values = {args...};
+//   if(typeid(args) == typeid(std::array<float, 4>)){
+//     this->setMatrixToArray(args);
+//   }
+//   else{
+//     std::array<float, rows*columns> values = {static_cast<float>(args)...};
 
-//   // now call our other constructor which can take this array as an argument
-//   this = Matrix<rows, columns>{values};
+//     // now store the array in our internal matrix
+//     this->setMatrixToArray(values);
+//   }
+  
 // }
 
 template <uint8_t rows, uint8_t columns>
@@ -422,6 +439,20 @@ void Matrix<rows, columns>::GetColumn(uint8_t column_index,
                                       Matrix<rows, 1> &column) const {
   for (uint8_t row_idx{0}; row_idx < rows; row_idx++) {
     column[0][column_index] = this->Get(row_idx, column_index);
+  }
+}
+
+template <uint8_t rows, uint8_t columns>
+void Matrix<rows, columns>::ToString(std::string & stringBuffer) const{
+  for(uint8_t row_idx{0}; row_idx < rows; row_idx++){
+    stringBuffer += "|";
+    for(uint8_t column_idx{0}; column_idx < columns; column_idx++){
+      stringBuffer += std::to_string(this->matrix[row_idx][column_idx]);
+      if(column_idx != columns - 1){
+        stringBuffer += "\t";
+      }
+    }
+    stringBuffer += "|\n";
   }
 }
 

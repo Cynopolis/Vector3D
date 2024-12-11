@@ -5,29 +5,39 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Matrix Tests",
+            "name": "Debug Matrix Unit Tests",
             "type": "cppdbg",
             "request": "launch",
-            "program": "enter program name, for example ${workspaceFolder}/build/unit-tests/matrix-tests",
-            "args": [],
+            "program": "${workspaceFolder}/build/unit-tests/matrix-tests", 
+            "args": [], 
             "stopAtEntry": false,
-            "cwd": "${fileDirname}",
+            "cwd": "${workspaceFolder}",
             "environment": [],
             "externalConsole": false,
-            "MIMode": "gdb",
+            "MIMode": "gdb", 
+            "miDebuggerPath": "/usr/bin/gdb",  // Adjust to your debugger path
             "setupCommands": [
                 {
                     "description": "Enable pretty-printing for gdb",
                     "text": "-enable-pretty-printing",
                     "ignoreFailures": true
-                },
-                {
-                    "description": "Set Disassembly Flavor to Intel",
-                    "text": "-gdb-set disassembly-flavor intel",
-                    "ignoreFailures": true
                 }
-            ]
+            ],
+            "preLaunchTask": "build_tests",  // Task to compile unit tests
+            "internalConsoleOptions": "openOnSessionStart"
+        },
+        {
+            "name": "Run Matrix Unit Tests",
+            "type": "cpp",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/unit-tests/matrix-tests",
+            "args": [], 
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "preLaunchTask": "build_tests",  // Compile unit tests before running
+            "internalConsoleOptions": "openOnSessionStart"
         }
-        
     ]
 }
