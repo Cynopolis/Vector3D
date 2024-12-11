@@ -4,6 +4,9 @@
 // include the module you're going to test next
 #include "Matrix.hpp"
 
+// any other libraries
+#include <array>
+
 unsigned int Factorial(unsigned int number) {
   return number <= 1 ? number : Factorial(number - 1) * number;
 }
@@ -16,8 +19,10 @@ TEST_CASE("Factorials are computed", "[factorial]") {
 }
 
 TEST_CASE("Matrix Addition", "Matrix::Add") {
-  Matrix<2, 2> mat1{std::array<float, 4>{1, 2, 3, 4}};
-  Matrix<2, 2> mat2{std::array<float, 4>{5, 6, 7, 8}};
+  std::array<float, 4> arr1{1, 2, 3, 4};
+  std::array<float, 4> arr2{5, 6, 7, 8};
+  Matrix<2, 2> mat1{arr1};
+  Matrix<2, 2> mat2{arr2};
 
   Matrix<2, 2> mat3{};
   mat1.Add(mat2, mat3);

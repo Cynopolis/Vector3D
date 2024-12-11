@@ -10,7 +10,16 @@ template <uint8_t rows, uint8_t columns> class Matrix {
 public:
   Matrix();
 
-  explicit Matrix(const std::array<float, columns> &array);
+  /**
+   * @brief Initialize a matrix with an array
+   */
+  Matrix(const std::array<float, rows*columns> &array);
+
+  /**
+   * @brief Initialize a matrix directly with any number of arguments
+   */
+  // template <typename... Args>
+  // Matrix(Args&&... args);
 
   /**
    * @brief Element-wise matrix addition
@@ -101,15 +110,23 @@ public:
    * @param column the column index of the element
    * @return The value of the element you want to get
    */
-  float &Get(uint8_t row_index, uint8_t column_index) const;
+  float Get(uint8_t row_index, uint8_t column_index) const;
 
   /**
    * @brief get the specified row of the matrix returned as a reference to the
    * internal array
    */
-  std::array<float, columns> &operator[](uint8_t row_index) const;
+  std::array<float, columns> &operator[](uint8_t row_index){
+    return this->matrix[row_index];
+  }
 
-  Matrix<rows, columns> &operator=(const Matrix<rows, columns> &other);
+  Matrix<rows, columns> &operator=(const Matrix<rows, columns> &other){
+    for(uint8_t row_idx{0}; row_idx < rows; row_idx++){
+      for(uint8_t column_idx{0}; column_idx < columns; column_idx++){
+        this->matrix[row_idx][column_idx] = other.Get(row_idx, column_idx);
+      }
+    }
+  }
 
   /**
    * @brief Get a row from the matrix
@@ -170,26 +187,37 @@ template <uint8_t rows, uint8_t columns> Matrix<rows, columns>::Matrix() {
 }
 
 template <uint8_t rows, uint8_t columns>
-Matrix<rows, columns>::Matrix(const std::array<float, columns> &array) {
+Matrix<rows, columns>::Matrix(const std::array<float, rows*columns> &array) {
   for (uint8_t row_idx{0}; row_idx < rows; row_idx++) {
     for (uint8_t column_idx{0}; column_idx < columns; column_idx++) {
       uint16_t array_idx =
           static_cast<uint16_t>(row_idx) + static_cast<uint16_t>(column_idx);
       if (array_idx < array.size()) {
-        this->Get(row_idx, column_idx) = array[array_idx];
+        this->matrix[row_idx][column_idx] = array[array_idx];
       } else {
-        this->Get(row_idx, column_idx) = 0;
+        this->matrix[row_idx][column_idx] = 0;
       }
     }
   }
 }
 
+// template <uint8_t rows, uint8_t columns>
+// template <typename... Args>
+// Matrix<rows, columns>::Matrix(Args&&... args){
+  
+//   // Initialize a std::array with the arguments
+//   std::array<float, sizeof...(args)> values = {args...};
+
+//   // now call our other constructor which can take this array as an argument
+//   this = Matrix<rows, columns>{values};
+// }
+
 template <uint8_t rows, uint8_t columns>
 void Matrix<rows, columns>::Add(const Matrix<rows, columns> &other,
                                 Matrix<rows, columns> &result) const {
-  for (uint8_t row{0}; row < rows; row++) {
-    for (uint8_t column{0}; column < columns; column++) {
-      result.Get(row, column) = this->Get(row, column) + other.Get(row, column);
+  for (uint8_t row_idx{0}; row_idx < rows; row_idx++) {
+    for (uint8_t column_idx{0}; column_idx < columns; column_idx++) {
+      result[row_idx][column_idx] = this->Get(row_idx, column_idx) + other.Get(row_idx, column_idx);
     }
   }
 }
@@ -197,9 +225,9 @@ void Matrix<rows, columns>::Add(const Matrix<rows, columns> &other,
 template <uint8_t rows, uint8_t columns>
 void Matrix<rows, columns>::Subtract(const Matrix<rows, columns> &other,
                                      Matrix<rows, columns> &result) const {
-  for (uint8_t row{0}; row < rows; row++) {
-    for (uint8_t column{0}; column < columns; column++) {
-      result.Get(row, column) = this->Get(row, column) - other.Get(row, column);
+  for (uint8_t row_idx{0}; row_idx < rows; row_idx++) {
+    for (uint8_t column_idx{0}; column_idx < columns; column_idx++) {
+      result[row_idx][column_idx] = this->Get(row_idx, column_idx) - other.Get(row_idx, column_idx);
     }
   }
 }
@@ -222,7 +250,7 @@ void Matrix<rows, columns>::Multiply(
       other_column.Transpose(other_column_t);
 
       // the result's index is equal to the dot product of these two vectors
-      result.Get(row_idx, column_idx) =
+      result[row_idx][column_idx] =
           this->dotProduct(this_row, other_column_t);
     }
   }
@@ -233,7 +261,7 @@ void Matrix<rows, columns>::Multiply(float scalar,
                                      Matrix<rows, columns> &result) const {
   for (uint8_t row_idx{0}; row_idx < rows; row_idx++) {
     for (uint8_t column_idx{0}; column_idx < columns; column_idx++) {
-      result.Get(row_idx, column_idx) = this->Get(row_idx, column_idx) * scalar;
+      result[row_idx][column_idx] = this->Get(row_idx, column_idx) * scalar;
     }
   }
 }
@@ -273,7 +301,7 @@ template <uint8_t rows, uint8_t columns>
 void Matrix<rows, columns>::Transpose(Matrix<columns, rows> &result) const {
   for (uint8_t column_idx{0}; column_idx < rows; column_idx++) {
     for (uint8_t row_idx{0}; row_idx < columns; row_idx++) {
-      result.Get(row_idx, column_idx) = this->Get(column_idx, row_idx);
+      result[row_idx][column_idx] = this->Get(column_idx, row_idx);
     }
   }
 }
@@ -360,7 +388,7 @@ void Matrix<rows, columns>::ElementMultiply(
     const Matrix<rows, columns> &other, Matrix<rows, columns> &result) const {
   for (uint8_t row_idx{0}; row_idx < rows; row_idx++) {
     for (uint8_t column_idx{0}; column_idx < columns; column_idx++) {
-      result.Get(row_idx, column_idx) =
+      result[row_idx][column_idx] =
           this->Get(row_idx, column_idx) * other.Get(row_idx, column_idx);
     }
   }
@@ -371,14 +399,14 @@ void Matrix<rows, columns>::ElementDivide(const Matrix<rows, columns> &other,
                                           Matrix<rows, columns> &result) const {
   for (uint8_t row_idx{0}; row_idx < rows; row_idx++) {
     for (uint8_t column_idx{0}; column_idx < columns; column_idx++) {
-      result.Get(row_idx, column_idx) =
+      result[row_idx][column_idx] =
           this->Get(row_idx, column_idx) / other.Get(row_idx, column_idx);
     }
   }
 }
 
 template <uint8_t rows, uint8_t columns>
-float &Matrix<rows, columns>::Get(uint8_t row_index,
+float Matrix<rows, columns>::Get(uint8_t row_index,
                                   uint8_t column_index) const {
   return this->matrix[row_index][column_index];
 }
@@ -393,7 +421,7 @@ template <uint8_t rows, uint8_t columns>
 void Matrix<rows, columns>::GetColumn(uint8_t column_index,
                                       Matrix<rows, 1> &column) const {
   for (uint8_t row_idx{0}; row_idx < rows; row_idx++) {
-    column.Get(0, column_index) = this->Get(row_idx, column_index);
+    column[0][column_index] = this->Get(row_idx, column_index);
   }
 }
 
@@ -426,7 +454,7 @@ void Matrix<rows, columns>::matrixOfMinors(
   for (uint8_t row_idx{0}; row_idx < rows; row_idx++) {
     for (uint8_t column_idx{0}; column_idx < columns; column_idx++) {
       this->minorMatrix(minorMatrix, row_idx, column_idx);
-      result.Get(row_idx, column_idx) = minorMatrix.Det();
+      result[row_idx][column_idx] = minorMatrix.Det();
     }
   }
 }
@@ -457,7 +485,7 @@ void Matrix<rows, columns>::adjugate(Matrix<rows, columns> &result) const {
     for (uint8_t column_iter{0}; column_iter < columns; column_iter++) {
       float sign = ((row_iter + 1) % 2) == 0 ? -1 : 1;
       sign *= ((column_iter + 1) % 2) == 0 ? -1 : 1;
-      result.Get(row_iter, column_iter) =
+      result[row_iter][column_iter] =
           this->Get(row_iter, column_iter) * sign;
     }
   }
@@ -480,7 +508,7 @@ void Matrix<rows, columns>::normalize(Matrix<rows, columns> &result) const {
 
   for (uint8_t column_idx{0}; column_idx < rows; column_idx++) {
     for (uint8_t row_idx{0}; row_idx < columns; row_idx++) {
-      result.Get(row_idx, column_idx) = this->Get(row_idx, column_idx) / sum;
+      result[row_idx][column_idx] = this->Get(row_idx, column_idx) / sum;
     }
   }
 }
