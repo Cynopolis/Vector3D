@@ -1,0 +1,14 @@
+Addition: 0.55 s
+Subtraction: 0.548 s
+Multiplication: 3.404 s
+Scalar Multiplication: 0.453 s
+Element Multiply: 0.347 s
+Element Divide: 0.347 s
+Minor Matrix: 0.44 s
+Determinant: 0.251 s
+Matrix of Minors: 1.044 s
+Invert: 0.262 s
+Transpose: 0.26 s
+Normalize: 0.333 s
+GET ROW: 0.683 s
+GET COLUMN: 0.427 s
