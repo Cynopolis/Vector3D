@@ -83,7 +83,7 @@ for new_timing in new_timings:
     for old_timing in old_timings:
         if new_timing == old_timing:
             new_timing.difference = new_timing - old_timing
-            if new_timing.difference >= 0.03:
+            if abs(new_timing.difference) >= 0.03:
                 difference_increased += f"{new_timing.test_name}, "
 
 def save_option():
@@ -102,7 +102,7 @@ for timing in new_timings:
     print(timing.to_string_w_diff())
 
 if len(difference_increased) > 0:
-    print("You increased the time it takes to run for:" + difference_increased)
+    print("You've made major timing changes for:" + difference_increased)
     save_option()
 else:
     print("No times have changed outside the margin of error.")

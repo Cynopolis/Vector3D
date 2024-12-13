@@ -198,7 +198,7 @@ private:
 
   void setMatrixToArray(const std::array<float, rows * columns> &array);
 
-  std::array<std::array<float, columns>, rows> matrix;
+  std::array<float, rows * columns> matrix;
 };
 
 #include "Matrix.cpp"
