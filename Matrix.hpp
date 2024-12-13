@@ -6,6 +6,11 @@
 #include <cstdlib>
 #include <type_traits>
 
+// TODO: Add a function to calculate eigenvalues/vectors
+// TODO: Add a function to compute RREF
+// TODO: Add a function for SVD decomposition
+// TODO: Add a function for LQ decomposition
+
 template <uint8_t rows, uint8_t columns> class Matrix {
 public:
   /**
