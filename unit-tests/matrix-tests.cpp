@@ -29,6 +29,27 @@ TEST_CASE("Elementary Matrix Operations", "Matrix") {
     REQUIRE(mat3.Get(0, 1) == 0);
     REQUIRE(mat3.Get(1, 0) == 0);
     REQUIRE(mat3.Get(1, 1) == 0);
+    // TODO: what about a matrix of size 255x255?
+  }
+
+  SECTION("Fill") {
+    mat1.Fill(0);
+    REQUIRE(mat1.Get(0, 0) == 0);
+    REQUIRE(mat1.Get(0, 1) == 0);
+    REQUIRE(mat1.Get(1, 0) == 0);
+    REQUIRE(mat1.Get(1, 1) == 0);
+
+    mat2.Fill(100000);
+    REQUIRE(mat2.Get(0, 0) == 100000);
+    REQUIRE(mat2.Get(0, 1) == 100000);
+    REQUIRE(mat2.Get(1, 0) == 100000);
+    REQUIRE(mat2.Get(1, 1) == 100000);
+
+    mat3.Fill(-20);
+    REQUIRE(mat3.Get(0, 0) == -20);
+    REQUIRE(mat3.Get(0, 1) == -20);
+    REQUIRE(mat3.Get(1, 0) == -20);
+    REQUIRE(mat3.Get(1, 1) == -20);
   }
 
   SECTION("Addition") {
@@ -42,11 +63,27 @@ TEST_CASE("Elementary Matrix Operations", "Matrix") {
     REQUIRE(mat3.Get(0, 1) == 8);
     REQUIRE(mat3.Get(1, 0) == 10);
     REQUIRE(mat3.Get(1, 1) == 12);
+
+    // try out addition with overloaded operators
+    mat3.Fill(0);
+    mat3 = mat1 + mat2;
+    REQUIRE(mat3.Get(0, 0) == 6);
+    REQUIRE(mat3.Get(0, 1) == 8);
+    REQUIRE(mat3.Get(1, 0) == 10);
+    REQUIRE(mat3.Get(1, 1) == 12);
   }
 
   SECTION("Subtraction") {
     mat1.Sub(mat2, mat3);
 
+    REQUIRE(mat3.Get(0, 0) == -4);
+    REQUIRE(mat3.Get(0, 1) == -4);
+    REQUIRE(mat3.Get(1, 0) == -4);
+    REQUIRE(mat3.Get(1, 1) == -4);
+
+    // try out subtraction with operators
+    mat3.Fill(0);
+    mat3 = mat1 - mat2;
     REQUIRE(mat3.Get(0, 0) == -4);
     REQUIRE(mat3.Get(0, 1) == -4);
     REQUIRE(mat3.Get(1, 0) == -4);
@@ -61,7 +98,13 @@ TEST_CASE("Elementary Matrix Operations", "Matrix") {
     REQUIRE(mat3.Get(1, 0) == 43);
     REQUIRE(mat3.Get(1, 1) == 50);
 
-    // try a non-square matrix
+    // try out multiplication with operators
+    mat3.Fill(0);
+    mat3 = mat1 * mat2;
+    REQUIRE(mat3.Get(0, 0) == 19);
+    REQUIRE(mat3.Get(0, 1) == 22);
+    REQUIRE(mat3.Get(1, 0) == 43);
+    REQUIRE(mat3.Get(1, 1) == 50);
   }
 
   SECTION("Scalar Multiplication") {
@@ -94,10 +137,47 @@ TEST_CASE("Elementary Matrix Operations", "Matrix") {
   SECTION("Element Divide") {
     mat1.ElementDivide(mat2, mat3);
 
-    REQUIRE(mat3.Get(0, 0) == 1 / 5);
-    REQUIRE(mat3.Get(0, 1) == 2 / 6);
-    REQUIRE(mat3.Get(1, 0) == 3 / 7);
-    REQUIRE(mat3.Get(1, 1) == 4 / 8);
+    REQUIRE_THAT(mat3.Get(0, 0), Catch::Matchers::WithinRel(0.2f, 1e-6f));
+    REQUIRE_THAT(mat3.Get(0, 1), Catch::Matchers::WithinRel(0.3333333f, 1e-6f));
+    REQUIRE_THAT(mat3.Get(1, 0), Catch::Matchers::WithinRel(0.4285714f, 1e-6f));
+    REQUIRE_THAT(mat3.Get(1, 1), Catch::Matchers::WithinRel(0.5f, 1e-6f));
+  }
+
+  SECTION("Minor Matrix") {
+    // what about matrices of 0,0 or 1,1?
+    // minor matrix for 2x2 matrix
+    Matrix<1, 1> minorMat1{};
+    mat1.MinorMatrix(minorMat1, 0, 0);
+    REQUIRE(minorMat1.Get(0, 0) == 4);
+    mat1.MinorMatrix(minorMat1, 0, 1);
+    REQUIRE(minorMat1.Get(0, 0) == 3);
+    mat1.MinorMatrix(minorMat1, 1, 0);
+    REQUIRE(minorMat1.Get(0, 0) == 2);
+    mat1.MinorMatrix(minorMat1, 1, 1);
+    REQUIRE(minorMat1.Get(0, 0) == 1);
+
+    // minor matrix for 3x3 matrix
+    std::array<float, 9> arr4{1, 2, 3, 4, 5, 6, 7, 8, 9};
+    Matrix<3, 3> mat4{arr4};
+    Matrix<2, 2> minorMat4{};
+
+    mat4.MinorMatrix(minorMat4, 0, 0);
+    REQUIRE(minorMat4.Get(0, 0) == 5);
+    REQUIRE(minorMat4.Get(0, 1) == 6);
+    REQUIRE(minorMat4.Get(1, 0) == 8);
+    REQUIRE(minorMat4.Get(1, 1) == 9);
+
+    mat4.MinorMatrix(minorMat4, 1, 1);
+    REQUIRE(minorMat4.Get(0, 0) == 1);
+    REQUIRE(minorMat4.Get(0, 1) == 3);
+    REQUIRE(minorMat4.Get(1, 0) == 7);
+    REQUIRE(minorMat4.Get(1, 1) == 9);
+
+    mat4.MinorMatrix(minorMat4, 2, 2);
+    REQUIRE(minorMat4.Get(0, 0) == 1);
+    REQUIRE(minorMat4.Get(0, 1) == 2);
+    REQUIRE(minorMat4.Get(1, 0) == 4);
+    REQUIRE(minorMat4.Get(1, 1) == 5);
   }
 
   SECTION("Determinant") {
@@ -119,7 +199,13 @@ TEST_CASE("Elementary Matrix Operations", "Matrix") {
     REQUIRE_THAT(det5, Catch::Matchers::WithinRel(6.0F, 1e-6f));
   }
 
-  SECTION("Invert"){};
+  SECTION("Invert"){
+      // mat1.Invert(mat3);
+      // REQUIRE_THAT(mat3.Get(0, 0), Catch::Matchers::WithinRel(-2.0F, 1e-6f));
+      // REQUIRE_THAT(mat3.Get(0, 0), Catch::Matchers::WithinRel(1.0F, 1e-6f));
+      // REQUIRE_THAT(mat3.Get(0, 0), Catch::Matchers::WithinRel(1.5F, 1e-6f));
+      // REQUIRE_THAT(mat3.Get(0, 0), Catch::Matchers::WithinRel(-0.5F, 1e-6f));
+  };
 
   SECTION("Transpose") {
     // transpose a square matrix
