@@ -75,12 +75,6 @@ public:
                               Matrix<rows, columns> &result) const;
 
   /**
-   * @brief Square this matrix
-   * @param result A buffer to store the result into
-   */
-  Matrix<rows, columns> &Square(Matrix<rows, rows> &result) const;
-
-  /**
    * @brief Element-wise multiply the two matrices
    * @param other the other matrix to multiply into this one
    * @param result A buffer to store the result into
@@ -107,6 +101,8 @@ public:
    * @note for right now only 2x2 and 3x3 matrices are supported
    */
   float Det() const;
+
+  Matrix<rows, columns> &MatrixOfMinors(Matrix<rows, columns> &result) const;
 
   /**
    * @brief Invert this matrix
@@ -195,8 +191,6 @@ private:
   template <uint8_t vector_size>
   static float dotProduct(const Matrix<vector_size, 1> &vec1,
                           const Matrix<vector_size, 1> &vec2);
-
-  Matrix<rows, columns> &matrixOfMinors(Matrix<rows, columns> &result) const;
 
   Matrix<rows, columns> &adjugate(Matrix<rows, columns> &result) const;
 
@@ -290,16 +284,18 @@ template <uint8_t other_columns>
 Matrix<rows, columns> &
 Matrix<rows, columns>::Mult(const Matrix<columns, other_columns> &other,
                             Matrix<rows, other_columns> &result) const {
+  // allocate some buffers for all of our dot products
+  Matrix<1, columns> this_row;
+  Matrix<rows, 1> other_column;
+  Matrix<1, rows> other_column_t;
+
   for (uint8_t row_idx{0}; row_idx < rows; row_idx++) {
+    // get our row
+    this->GetRow(row_idx, this_row);
     for (uint8_t column_idx{0}; column_idx < columns; column_idx++) {
-      // get our row
-      Matrix<1, columns> this_row;
-      this->GetRow(row_idx, this_row);
-      // get the other matrices column
-      Matrix<rows, 1> other_column;
+      // get the other matrix'ss column
       other.GetColumn(column_idx, other_column);
       // transpose the other matrix's column
-      Matrix<1, rows> other_column_t;
       other_column.Transpose(other_column_t);
 
       // the result's index is equal to the dot product of these two vectors
@@ -334,7 +330,7 @@ Matrix<rows, columns>::Invert(Matrix<rows, columns> &result) const {
   // unfortunately we can't calculate this at compile time so we'll just reurn
   // zeros
   float determinant{this->Det()};
-  if (determinant < 0) {
+  if (determinant == 0) {
     // you can't invert a matrix with a negative determinant
     result.Fill(0);
     return result;
@@ -346,13 +342,14 @@ Matrix<rows, columns>::Invert(Matrix<rows, columns> &result) const {
 
   // calculate the matrix of minors
   Matrix<rows, columns> minors{};
-  this->matrixOfMinors(minors);
+  this->MatrixOfMinors(minors);
 
   // now adjugate the matrix and save it in our output
   minors.adjugate(result);
 
   // scale the result by 1/determinant and we have our answer
-  result.Mult(1 / determinant, result);
+  result = result * (1 / determinant);
+  // result.Mult(1 / determinant, result);
 
   return result;
 }
@@ -369,20 +366,10 @@ Matrix<rows, columns>::Transpose(Matrix<columns, rows> &result) const {
   return result;
 }
 
-template <uint8_t rows, uint8_t columns>
-Matrix<rows, columns> &
-Matrix<rows, columns>::Square(Matrix<rows, rows> &result) const {
-  // TODO: Because template requirements are checked before static_assert, this
-  // never throws an error and fails at the Mult call instead.
-  static_assert(rows == columns, "You can't square a non-square matrix.");
-
-  this->Mult(*this, result);
-
-  return result;
-}
-
 // explicitly define the determinant for a 2x2 matrix because it is definitely
 // the fastest way to calculate a 2x2 matrix determinant
+template <> float Matrix<0, 0>::Det() const { return 1e+6; }
+template <> float Matrix<1, 1>::Det() const { return this->matrix[0][0]; }
 template <> float Matrix<2, 2>::Det() const {
   return this->matrix[0][0] * this->matrix[1][1] -
          this->matrix[0][1] * this->matrix[1][0];
@@ -392,6 +379,7 @@ template <uint8_t rows, uint8_t columns>
 float Matrix<rows, columns>::Det() const {
   static_assert(rows == columns,
                 "You can't take the determinant of a non-square matrix.");
+
   Matrix<rows - 1, columns - 1> MinorMatrix{};
   float determinant{0};
   for (uint8_t column_idx{0}; column_idx < columns; column_idx++) {
@@ -436,7 +424,8 @@ template <uint8_t rows, uint8_t columns>
 float Matrix<rows, columns>::Get(uint8_t row_index,
                                  uint8_t column_index) const {
   if (row_index > rows - 1 || column_index > columns - 1) {
-    return 0; // TODO: We should throw something here instead of failing quietly
+    return 1e+10; // TODO: We should throw something here instead of failing
+                  // quietly
   }
   return this->matrix[row_index][column_index];
 }
@@ -563,7 +552,7 @@ void Matrix<rows, columns>::Fill(float value) {
 
 template <uint8_t rows, uint8_t columns>
 Matrix<rows, columns> &
-Matrix<rows, columns>::matrixOfMinors(Matrix<rows, columns> &result) const {
+Matrix<rows, columns>::MatrixOfMinors(Matrix<rows, columns> &result) const {
   Matrix<rows - 1, columns - 1> MinorMatrix{};
 
   for (uint8_t row_idx{0}; row_idx < rows; row_idx++) {
@@ -606,7 +595,7 @@ Matrix<rows, columns>::adjugate(Matrix<rows, columns> &result) const {
     for (uint8_t column_iter{0}; column_iter < columns; column_iter++) {
       float sign = ((row_iter + 1) % 2) == 0 ? -1 : 1;
       sign *= ((column_iter + 1) % 2) == 0 ? -1 : 1;
-      result[row_iter][column_iter] = this->Get(row_iter, column_iter) * sign;
+      result[column_iter][row_iter] = this->Get(row_iter, column_iter) * sign;
     }
   }
 
@@ -626,7 +615,7 @@ Matrix<rows, columns>::Normalize(Matrix<rows, columns> &result) const {
 
   if (sum == 0) {
     // this wouldn't do anything anyways
-    result.Fill(0);
+    result.Fill(1e+6);
     return result;
   }
 

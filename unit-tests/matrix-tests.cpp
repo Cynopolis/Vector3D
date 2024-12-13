@@ -116,15 +116,6 @@ TEST_CASE("Elementary Matrix Operations", "Matrix") {
     REQUIRE(mat3.Get(1, 1) == 8);
   }
 
-  SECTION("Squaring") {
-    mat1.Square(mat3);
-
-    REQUIRE(mat3.Get(0, 0) == 7);
-    REQUIRE(mat3.Get(0, 1) == 10);
-    REQUIRE(mat3.Get(1, 0) == 15);
-    REQUIRE(mat3.Get(1, 1) == 22);
-  }
-
   SECTION("Element Multiply") {
     mat1.ElementMultiply(mat2, mat3);
 
@@ -199,12 +190,34 @@ TEST_CASE("Elementary Matrix Operations", "Matrix") {
     REQUIRE_THAT(det5, Catch::Matchers::WithinRel(6.0F, 1e-6f));
   }
 
-  SECTION("Invert"){
-      // mat1.Invert(mat3);
-      // REQUIRE_THAT(mat3.Get(0, 0), Catch::Matchers::WithinRel(-2.0F, 1e-6f));
-      // REQUIRE_THAT(mat3.Get(0, 0), Catch::Matchers::WithinRel(1.0F, 1e-6f));
-      // REQUIRE_THAT(mat3.Get(0, 0), Catch::Matchers::WithinRel(1.5F, 1e-6f));
-      // REQUIRE_THAT(mat3.Get(0, 0), Catch::Matchers::WithinRel(-0.5F, 1e-6f));
+  SECTION("Matrix of Minors") {
+    mat1.MatrixOfMinors(mat3);
+    REQUIRE_THAT(mat3.Get(0, 0), Catch::Matchers::WithinRel(4.0F, 1e-6f));
+    REQUIRE_THAT(mat3.Get(0, 1), Catch::Matchers::WithinRel(3.0F, 1e-6f));
+    REQUIRE_THAT(mat3.Get(1, 0), Catch::Matchers::WithinRel(2.0F, 1e-6f));
+    REQUIRE_THAT(mat3.Get(1, 1), Catch::Matchers::WithinRel(1.0F, 1e-6f));
+
+    std::array<float, 9> arr4{1, 2, 3, 4, 5, 6, 7, 8, 9};
+    Matrix<3, 3> mat4{arr4};
+    Matrix<3, 3> mat5{0};
+    mat4.MatrixOfMinors(mat5);
+    REQUIRE_THAT(mat5.Get(0, 0), Catch::Matchers::WithinRel(-3.0F, 1e-6f));
+    REQUIRE_THAT(mat5.Get(0, 1), Catch::Matchers::WithinRel(-6.0F, 1e-6f));
+    REQUIRE_THAT(mat5.Get(0, 2), Catch::Matchers::WithinRel(-3.0F, 1e-6f));
+    REQUIRE_THAT(mat5.Get(1, 0), Catch::Matchers::WithinRel(-6.0F, 1e-6f));
+    REQUIRE_THAT(mat5.Get(1, 1), Catch::Matchers::WithinRel(-12.0F, 1e-6f));
+    REQUIRE_THAT(mat5.Get(1, 2), Catch::Matchers::WithinRel(-6.0F, 1e-6f));
+    REQUIRE_THAT(mat5.Get(2, 0), Catch::Matchers::WithinRel(-3.0F, 1e-6f));
+    REQUIRE_THAT(mat5.Get(2, 1), Catch::Matchers::WithinRel(-6.0F, 1e-6f));
+    REQUIRE_THAT(mat5.Get(2, 2), Catch::Matchers::WithinRel(-3.0F, 1e-6f));
+  }
+
+  SECTION("Invert") {
+    mat1.Invert(mat3);
+    REQUIRE_THAT(mat3.Get(0, 0), Catch::Matchers::WithinRel(-2.0F, 1e-6f));
+    REQUIRE_THAT(mat3.Get(0, 1), Catch::Matchers::WithinRel(1.0F, 1e-6f));
+    REQUIRE_THAT(mat3.Get(1, 0), Catch::Matchers::WithinRel(1.5F, 1e-6f));
+    REQUIRE_THAT(mat3.Get(1, 1), Catch::Matchers::WithinRel(-0.5F, 1e-6f));
   };
 
   SECTION("Transpose") {
