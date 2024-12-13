@@ -26,6 +26,7 @@ target_include_directories(Vector3D PUBLIC
 add_library(Matrix 
     STATIC
     Matrix.hpp
+    Matrix.cpp
 )
 
 set_target_properties(Matrix

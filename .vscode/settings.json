@@ -72,5 +72,6 @@
         "variant": "cpp",
         "shared_mutex": "cpp"
     },
-    "clangd.enable": false
+    "clangd.enable": false,
+    "C_Cpp.dimInactiveRegions": false
 }
