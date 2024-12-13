@@ -30,12 +30,11 @@ public:
    * @brief Initialize a matrix as a copy of another matrix
    */
   Matrix(const Matrix<rows, columns> &other);
-  // TODO: Figure out how to do this
+
   /**
    * @brief Initialize a matrix directly with any number of arguments
    */
-  // template <typename... Args>
-  // Matrix(Args&&... args);
+  template <typename... Args> Matrix(Args... args);
   /**
    * @brief Set all elements in this to value
    */

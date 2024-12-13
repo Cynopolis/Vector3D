@@ -11,9 +11,8 @@
 #include <iostream>
 
 TEST_CASE("Elementary Matrix Operations", "Matrix") {
-  std::array<float, 4> arr1{1, 2, 3, 4};
   std::array<float, 4> arr2{5, 6, 7, 8};
-  Matrix<2, 2> mat1{arr1};
+  Matrix<2, 2> mat1{1, 2, 3, 4};
   Matrix<2, 2> mat2{arr2};
   Matrix<2, 2> mat3{};
 
@@ -29,7 +28,21 @@ TEST_CASE("Elementary Matrix Operations", "Matrix") {
     REQUIRE(mat3.Get(0, 1) == 0);
     REQUIRE(mat3.Get(1, 0) == 0);
     REQUIRE(mat3.Get(1, 1) == 0);
-    // TODO: what about a matrix of size 255x255?
+
+    // template pack initialization
+    REQUIRE(mat2.Get(0, 0) == 5);
+    REQUIRE(mat2.Get(0, 1) == 6);
+    REQUIRE(mat2.Get(1, 0) == 7);
+    REQUIRE(mat2.Get(1, 1) == 8);
+
+    // large matrix
+    Matrix<255, 255> mat6{};
+    mat6.Fill(4);
+    for (uint8_t row{0}; row < 255; row++) {
+      for (uint8_t column{0}; column < 255; column++) {
+        REQUIRE(mat6.Get(row, column) == 4);
+      }
+    }
   }
 
   SECTION("Fill") {
@@ -148,8 +161,7 @@ TEST_CASE("Elementary Matrix Operations", "Matrix") {
     REQUIRE(minorMat1.Get(0, 0) == 1);
 
     // minor matrix for 3x3 matrix
-    std::array<float, 9> arr4{1, 2, 3, 4, 5, 6, 7, 8, 9};
-    Matrix<3, 3> mat4{arr4};
+    Matrix<3, 3> mat4{1, 2, 3, 4, 5, 6, 7, 8, 9};
     Matrix<2, 2> minorMat4{};
 
     mat4.MinorMatrix(minorMat4, 0, 0);
@@ -176,15 +188,13 @@ TEST_CASE("Elementary Matrix Operations", "Matrix") {
 
     REQUIRE_THAT(det1, Catch::Matchers::WithinRel(-2.0F, 1e-6f));
 
-    std::array<float, 9> arr4{1, 2, 3, 4, 5, 6, 7, 8, 9};
-    Matrix<3, 3> mat4{arr4};
+    Matrix<3, 3> mat4{1, 2, 3, 4, 5, 6, 7, 8, 9};
 
     float det4 = mat4.Det();
 
     REQUIRE_THAT(det4, Catch::Matchers::WithinRel(0.0F, 1e-6f));
 
-    std::array<float, 9> arr5{1, 0, 0, 0, 2, 0, 0, 0, 3};
-    Matrix<3, 3> mat5{arr5};
+    Matrix<3, 3> mat5{1, 0, 0, 0, 2, 0, 0, 0, 3};
 
     float det5 = mat5.Det();
     REQUIRE_THAT(det5, Catch::Matchers::WithinRel(6.0F, 1e-6f));
@@ -197,8 +207,7 @@ TEST_CASE("Elementary Matrix Operations", "Matrix") {
     REQUIRE_THAT(mat3.Get(1, 0), Catch::Matchers::WithinRel(2.0F, 1e-6f));
     REQUIRE_THAT(mat3.Get(1, 1), Catch::Matchers::WithinRel(1.0F, 1e-6f));
 
-    std::array<float, 9> arr4{1, 2, 3, 4, 5, 6, 7, 8, 9};
-    Matrix<3, 3> mat4{arr4};
+    Matrix<3, 3> mat4{1, 2, 3, 4, 5, 6, 7, 8, 9};
     Matrix<3, 3> mat5{0};
     mat4.MatrixOfMinors(mat5);
     REQUIRE_THAT(mat5.Get(0, 0), Catch::Matchers::WithinRel(-3.0F, 1e-6f));
@@ -230,8 +239,7 @@ TEST_CASE("Elementary Matrix Operations", "Matrix") {
     REQUIRE(mat3.Get(1, 1) == 4);
 
     // transpose a non-square matrix
-    std::array<float, 6> arr4{1, 2, 3, 4, 5, 6};
-    Matrix<2, 3> mat4{arr4};
+    Matrix<2, 3> mat4{1, 2, 3, 4, 5, 6};
     Matrix<3, 2> mat5{};
 
     mat4.Transpose(mat5);
@@ -254,8 +262,7 @@ TEST_CASE("Elementary Matrix Operations", "Matrix") {
     REQUIRE(mat3.Get(1, 0) == 3 / sqrt_30);
     REQUIRE(mat3.Get(1, 1) == 4 / sqrt_30);
 
-    std::array<float, 2> arr4{-0.878877044, 2.92092276};
-    Matrix<2, 1> mat4{arr4};
+    Matrix<2, 1> mat4{-0.878877044, 2.92092276};
     Matrix<2, 1> mat5{};
     mat4.Normalize(mat5);
 
@@ -304,9 +311,7 @@ TEST_CASE("Timing Tests", "Matrix") {
   Matrix<50, 50> mat3{};
 
   // A smaller matrix to use for really badly optimized operations
-  std::array<float, 16> arr4{1, 2,  3,  4,  5,  6,  7,  8,
-                             9, 10, 11, 12, 13, 14, 15, 16};
-  Matrix<4, 4> mat4{arr4};
+  Matrix<4, 4> mat4{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
   Matrix<4, 4> mat5{};
 
   SECTION("Addition") {

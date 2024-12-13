@@ -2,9 +2,44 @@
                  // will evaluate to true
 #include "Matrix.hpp"
 
+#include <algorithm>
 #include <cmath>
 #include <cstdlib>
 #include <type_traits>
+
+template <uint8_t rows, uint8_t columns>
+Matrix<rows, columns>::Matrix(float value) {
+  this->Fill(value);
+}
+
+template <uint8_t rows, uint8_t columns>
+Matrix<rows, columns>::Matrix(const std::array<float, rows * columns> &array) {
+  this->setMatrixToArray(array);
+}
+
+template <uint8_t rows, uint8_t columns>
+template <typename... Args>
+Matrix<rows, columns>::Matrix(Args... args) {
+  constexpr uint16_t arraySize{static_cast<uint16_t>(rows) *
+                               static_cast<uint16_t>(columns)};
+
+  std::initializer_list<float> initList{static_cast<float>(args)...};
+  std::array<float, arraySize> data{};
+  // choose whichever buffer size is smaller for the copy length
+  uint32_t minSize =
+      std::min(arraySize, static_cast<uint16_t>(initList.size()));
+  memcpy(data.begin(), initList.begin(), minSize * sizeof(float));
+  this->setMatrixToArray(data);
+}
+
+template <uint8_t rows, uint8_t columns>
+Matrix<rows, columns>::Matrix(const Matrix<rows, columns> &other) {
+  for (uint8_t row_idx{0}; row_idx < rows; row_idx++) {
+    for (uint8_t column_idx{0}; column_idx < columns; column_idx++) {
+      this->matrix[row_idx][column_idx] = other.Get(row_idx, column_idx);
+    }
+  }
+}
 
 template <uint8_t rows, uint8_t columns>
 void Matrix<rows, columns>::setMatrixToArray(
@@ -19,42 +54,6 @@ void Matrix<rows, columns>::setMatrixToArray(
       } else {
         this->matrix[row_idx][column_idx] = 0;
       }
-    }
-  }
-}
-
-template <uint8_t rows, uint8_t columns>
-Matrix<rows, columns>::Matrix(float value) {
-  this->Fill(value);
-}
-
-template <uint8_t rows, uint8_t columns>
-Matrix<rows, columns>::Matrix(const std::array<float, rows * columns> &array) {
-  this->setMatrixToArray(array);
-}
-
-// template <uint8_t rows, uint8_t columns>
-// template <typename... Args>
-// Matrix<rows, columns>::Matrix(Args&&... args){
-
-//   // Initialize a std::array with the arguments
-//   if(typeid(args) == typeid(std::array<float, 4>)){
-//     this->setMatrixToArray(args);
-//   }
-//   else{
-//     std::array<float, rows*columns> values = {static_cast<float>(args)...};
-
-//     // now store the array in our internal matrix
-//     this->setMatrixToArray(values);
-//   }
-
-// }
-
-template <uint8_t rows, uint8_t columns>
-Matrix<rows, columns>::Matrix(const Matrix<rows, columns> &other) {
-  for (uint8_t row_idx{0}; row_idx < rows; row_idx++) {
-    for (uint8_t column_idx{0}; column_idx < columns; column_idx++) {
-      this->matrix[row_idx][column_idx] = other.Get(row_idx, column_idx);
     }
   }
 }
