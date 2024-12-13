@@ -265,7 +265,46 @@ TEST_CASE("Elementary Matrix Operations", "Matrix") {
                  Catch::Matchers::WithinRel(0.957591346325f, 1e-6f));
   }
 
-  SECTION("GET ROW") {}
+  SECTION("GET ROW") {
+    Matrix<1, 2> mat1Rows{};
+    mat1.GetRow(0, mat1Rows);
+    REQUIRE(mat1Rows.Get(0, 0) == 1);
+    REQUIRE(mat1Rows.Get(0, 1) == 2);
 
-  SECTION("GET COLUMN") {}
+    mat1.GetRow(1, mat1Rows);
+    REQUIRE(mat1Rows.Get(0, 0) == 3);
+    REQUIRE(mat1Rows.Get(0, 1) == 4);
+  }
+
+  SECTION("GET COLUMN") {
+    Matrix<2, 1> mat1Columns{};
+    mat1.GetColumn(0, mat1Columns);
+    REQUIRE(mat1Columns.Get(0, 0) == 1);
+    REQUIRE(mat1Columns.Get(1, 0) == 3);
+
+    mat1.GetColumn(1, mat1Columns);
+    REQUIRE(mat1Columns.Get(0, 0) == 2);
+    REQUIRE(mat1Columns.Get(1, 0) == 4);
+  }
+}
+
+// basically re-run all of the previous tests with huge matrices and time the
+// results.
+TEST_CASE("Timing Tests", "Matrix") {
+  std::array<float, 50 * 50> arr1{};
+  for (uint16_t i{0}; i < 50 * 50; i++) {
+    arr1[i] = i;
+  }
+  std::array<float, 50 * 50> arr2{5, 6, 7, 8};
+  for (uint16_t i{50 * 50}; i < 2 * 50 * 50; i++) {
+    arr2[i] = i;
+  }
+  Matrix<50, 50> mat1{arr1};
+  Matrix<50, 50> mat2{arr2};
+  Matrix<50, 50> mat3{};
+
+  // TODO: the timing results should be saved to a temporary text file
+  // TODO: after the timing results are complete we should read in the old
+  // result file, calculate the timing increase/decrease and update the file
+  // with the new results and increase/decrease
 }
