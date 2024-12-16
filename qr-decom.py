@@ -1,5 +1,6 @@
 import numpy as np
 
+# QR decomposition using the householder reflection method
 def householder_reflection(A):
     """
     Perform QR decomposition using Householder reflection.
@@ -103,3 +104,56 @@ print("\nVt matrix:")
 print(Vt)
 print("Multiplied together:")
 print(U@Sigma@Vt)
+
+def eigen_decomposition_qr(A, max_iter=1000, tol=1e-9):
+    """
+    Compute the eigenvalues and eigenvectors of a matrix A using the QR algorithm
+    with QR decomposition.
+
+    Arguments:
+    A -- A square matrix (n x n).
+    max_iter -- Maximum number of iterations for convergence (default 1000).
+    tol -- Tolerance for convergence (default 1e-9).
+    
+    Returns:
+    eigenvalues -- List of eigenvalues.
+    eigenvectors -- Matrix of eigenvectors.
+    """
+    # Make a copy of A to perform the iteration
+    A_copy = A.copy()
+    n = A_copy.shape[0]
+    
+    # Initialize the matrix for eigenvectors (this will accumulate the Q matrices)
+    eigenvectors = np.eye(n)
+    
+    # Perform QR iterations
+    for _ in range(max_iter):
+        # Perform QR decomposition on A_copy
+        Q, R = householder_reflection(A_copy)
+        
+        # Update A_copy to be R * Q (QR algorithm step)
+        A_copy = R @ Q
+        
+        # Accumulate the eigenvectors
+        eigenvectors = eigenvectors @ Q
+        
+        # Check for convergence: if the off-diagonal elements are small enough, we stop
+        off_diagonal_norm = np.linalg.norm(np.tril(A_copy, -1))  # Norm of the lower triangle (off-diagonal)
+        if off_diagonal_norm < tol:
+            break
+    
+    # The eigenvalues are the diagonal elements of the matrix A_copy
+    eigenvalues = np.diag(A_copy)
+    
+    return eigenvalues, eigenvectors
+
+# Example usage
+A = np.array([[12, -51, 4], 
+              [6, 167, -68], 
+              [-4, 24, -41]])
+
+eigenvalues, eigenvectors = eigen_decomposition_qr(A)
+
+
+print("\n\nEigenvalues:", eigenvalues)
+print("Eigenvectors:\n", eigenvectors)
