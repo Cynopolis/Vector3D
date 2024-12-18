@@ -35,6 +35,7 @@ public:
    * @brief Initialize a matrix directly with any number of arguments
    */
   template <typename... Args> Matrix(Args... args);
+
   /**
    * @brief Set all elements in this to value
    */
@@ -64,8 +65,8 @@ public:
    * @param result A buffer to store the result into
    */
   template <uint8_t other_columns>
-  Matrix<rows, columns> &Mult(const Matrix<columns, other_columns> &other,
-                              Matrix<rows, other_columns> &result) const;
+  Matrix<rows, other_columns> &Mult(const Matrix<columns, other_columns> &other,
+                                    Matrix<rows, other_columns> &result) const;
 
   /**
    * @brief Multiply the matrix by a scalar
@@ -126,6 +127,66 @@ public:
   Matrix<rows, columns> &Normalize(Matrix<rows, columns> &result) const;
 
   /**
+   * @brief return an identity matrix of the specified size
+   */
+  static Matrix<rows, rows> Eye();
+
+  /**
+   * @brief write a copy of a sub matrix into the given result matrix.
+   * @param rowIndex The row index to start the copy from
+   * @param columnIndex the column index to start the copy from
+   * @param result the matrix buffer to write the sub matrix into. The size of
+   * the matrix buffer allows the function to determine the end indices of the
+   * sub matrix
+   */
+  template <uint8_t subRows, uint8_t subColumns>
+  Matrix<subRows, subColumns> &
+  SubMatrix(uint8_t rowIndex, uint8_t columnIndex,
+            Matrix<subRows, subColumns> &result) const {
+    return result;
+  }
+
+  /**
+   * @brief write a copy of a sub matrix into this matrix starting at the given
+   * idnex.
+   * @param rowIndex The row index to start the copy from
+   * @param columnIndex the column index to start the copy from
+   * @param subMatrix The submatrix to copy into this matrix. The size of
+   * the matrix buffer allows the function to determine the end indices of the
+   * sub matrix
+   */
+  template <uint8_t subRows, uint8_t subColumns>
+  void CopySubMatrixInto(uint8_t rowIndex, uint8_t columnIndex,
+                         const Matrix<subRows, subColumns> &subMatrix) {}
+
+  /**
+   * @brief Returns the norm of the matrix
+   */
+  float Norm() { return 0; }
+
+  template <uint8_t vec1Length, uint8_t vec2Length>
+  static Matrix<vec1Length, vec2Length> &
+  OuterProduct(const Matrix<1, vec1Length> &vec1,
+               const Matrix<1, vec2Length> &vec2,
+               Matrix<vec1Length, vec2Length> &result) {
+    return result;
+  }
+
+  template <uint8_t vec1Length, uint8_t vec2Length>
+  static Matrix<vec1Length, vec2Length> &
+  OuterProduct(const Matrix<vec1Length, 1> &vec1,
+               const Matrix<vec2Length, 1> &vec2,
+               Matrix<vec1Length, vec2Length> &result) {
+    return result;
+  }
+  /**
+   * @brief Calulcate the QR decomposition of a matrix
+   * @param Q the
+   */
+  void QR_Decomposition(Matrix<rows, columns> &Q,
+                        Matrix<rows, columns> &R) const;
+
+  /**
    * @brief Get a row from the matrix
    * @param row_index the row index to get
    * @param row a buffer to write the row into
@@ -159,6 +220,10 @@ public:
    * @return The value of the element you want to get
    */
   float Get(uint8_t row_index, uint8_t column_index) const;
+
+  // *******************************************************
+  // ************** OPERATOR OVERRIDES *********************
+  // *******************************************************
 
   /**
    * @brief get the specified row of the matrix returned as a reference to the

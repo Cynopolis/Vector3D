@@ -182,6 +182,18 @@ TEST_CASE("Elementary Matrix Operations", "Matrix") {
     REQUIRE(minorMat4.Get(1, 0) == 4);
     REQUIRE(minorMat4.Get(1, 1) == 5);
   }
+  SECTION("Identity Matrix") {
+    Matrix<3, 3> mat4{Matrix<3, 3>::Eye()};
+    REQUIRE(mat4.Get(0, 0) == 1);
+    REQUIRE(mat4.Get(0, 1) == 0);
+    REQUIRE(mat4.Get(0, 2) == 0);
+    REQUIRE(mat4.Get(1, 0) == 0);
+    REQUIRE(mat4.Get(1, 1) == 1);
+    REQUIRE(mat4.Get(1, 2) == 0);
+    REQUIRE(mat4.Get(2, 0) == 0);
+    REQUIRE(mat4.Get(2, 1) == 0);
+    REQUIRE(mat4.Get(2, 2) == 1);
+  }
 
   SECTION("Determinant") {
     float det1 = mat1.Det();

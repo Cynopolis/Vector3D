@@ -18,6 +18,16 @@ Matrix<rows, columns>::Matrix(const std::array<float, rows * columns> &array) {
 }
 
 template <uint8_t rows, uint8_t columns>
+Matrix<rows, columns>::Matrix(const Matrix<rows, columns> &other) {
+  for (uint8_t row_idx{0}; row_idx < rows; row_idx++) {
+    for (uint8_t column_idx{0}; column_idx < columns; column_idx++) {
+      this->matrix[row_idx * columns + column_idx] =
+          other.Get(row_idx, column_idx);
+    }
+  }
+}
+
+template <uint8_t rows, uint8_t columns>
 template <typename... Args>
 Matrix<rows, columns>::Matrix(Args... args) {
   constexpr uint16_t arraySize{static_cast<uint16_t>(rows) *
@@ -28,16 +38,6 @@ Matrix<rows, columns>::Matrix(Args... args) {
   uint32_t minSize =
       std::min(arraySize, static_cast<uint16_t>(initList.size()));
   memcpy(this->matrix.begin(), initList.begin(), minSize * sizeof(float));
-}
-
-template <uint8_t rows, uint8_t columns>
-Matrix<rows, columns>::Matrix(const Matrix<rows, columns> &other) {
-  for (uint8_t row_idx{0}; row_idx < rows; row_idx++) {
-    for (uint8_t column_idx{0}; column_idx < columns; column_idx++) {
-      this->matrix[row_idx * columns + column_idx] =
-          other.Get(row_idx, column_idx);
-    }
-  }
 }
 
 template <uint8_t rows, uint8_t columns>
@@ -86,7 +86,7 @@ Matrix<rows, columns>::Sub(const Matrix<rows, columns> &other,
 
 template <uint8_t rows, uint8_t columns>
 template <uint8_t other_columns>
-Matrix<rows, columns> &
+Matrix<rows, other_columns> &
 Matrix<rows, columns>::Mult(const Matrix<columns, other_columns> &other,
                             Matrix<rows, other_columns> &result) const {
   // allocate some buffers for all of our dot products
@@ -353,11 +353,7 @@ float Matrix<rows, columns>::dotProduct(const Matrix<vector_size, 1> &vec1,
 
 template <uint8_t rows, uint8_t columns>
 void Matrix<rows, columns>::Fill(float value) {
-  for (uint8_t row_idx{0}; row_idx < rows; row_idx++) {
-    for (uint8_t column_idx{0}; column_idx < columns; column_idx++) {
-      this->matrix[row_idx * columns + column_idx] = value;
-    }
-  }
+  this->matrix.fill(value);
 }
 
 template <uint8_t rows, uint8_t columns>
@@ -438,6 +434,75 @@ Matrix<rows, columns>::Normalize(Matrix<rows, columns> &result) const {
   }
 
   return result;
+}
+
+template <uint8_t rows, uint8_t columns>
+Matrix<rows, rows> Matrix<rows, columns>::Eye() {
+  Matrix<rows, rows> i_matrix;
+  i_matrix.Fill(0);
+  for (uint8_t i{0}; i < rows; i++) {
+    i_matrix[i][i] = 1;
+  }
+  return i_matrix;
+}
+
+template <uint8_t rows, uint8_t columns>
+void Matrix<rows, columns>::QR_Decomposition(Matrix<rows, columns> &Q,
+                                             Matrix<rows, columns> &R) const {
+  Q = Matrix<rows, columns>::Eye(); // Q starts as the identity matrix
+  R = *this; // R starts as a copy of this matrix (For this algorithm we'll call
+             // this matrix A)
+
+  for (uint8_t row{0}; row < rows; row++) {
+    // compute the householder vector
+    const uint8_t houseHoldVectorSize{rows - row};
+    const uint8_t subMatrixSize{columns - row};
+    Matrix<houseHoldVectorSize, 1> x{};
+    this->SubMatrix(row, row, x);
+
+    Matrix<houseHoldVectorSize, 1> e1{};
+    e1.Fill(0);
+    if (x[0][0] >= 0) {
+      e1[0][0] = x.Norm();
+    } else {
+      e1[0][0] = -x.Norm();
+    }
+
+    Matrix<houseHoldVectorSize, 1> v = x + e1;
+    v = v * (1 / v.Norm()); // normalize V
+
+    // ************************************
+    // Apply the reflection to the R matrix
+    // ************************************
+    // initialize R's submatrix
+    Matrix<houseHoldVectorSize, subMatrixSize> R_subMatrix{};
+    R.SubMatrix(row, row, R_subMatrix);
+    // create some temporary buffers
+    Matrix<1, subMatrixSize> vR{};
+    Matrix<1, houseHoldVectorSize> v_T{};
+    v.Transpose(v_T);
+    Matrix<houseHoldVectorSize, subMatrixSize> vR_outer{};
+    // calculate the reflection
+    R_subMatrix =
+        R_subMatrix - 2 * Matrix<rows, columns>::OuterProduct(
+                              v_T, v_T.Mult(R_subMatrix, vR), vR_outer);
+    // save the reflection back to R
+    R.CopySubMatrixInto(row, row, R_subMatrix);
+
+    // ************************************
+    // Apply the reflection to the Q matrix
+    // ************************************
+    // initialize Q's submatrix
+    Matrix<rows, houseHoldVectorSize> Q_subMatrix{};
+    Q.SubMatrix(0, row, Q_subMatrix);
+    // create some temporary buffers
+    Matrix<rows, 1> Qv{};
+    Matrix<rows, houseHoldVectorSize> Qv_outer{};
+
+    Q_subMatrix = Q_subMatrix - 2 * Matrix<rows, columns>::OuterProduct(
+                                        Q_subMatrix.Mult(v, Qv), v, Qv_outer);
+    Q.CopySubMatrixInto(0, row, Q_subMatrix);
+  }
 }
 
 #endif // MATRIX_H_
