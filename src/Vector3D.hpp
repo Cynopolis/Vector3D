@@ -18,13 +18,13 @@ public:
     template <typename OtherType>
     V3D(const V3D<OtherType> &other);
 
-    std::array<Type, 3> ToArray();
+    std::array<Type, 3> ToArray() const;
 
-    V3D<Type> operator+(const V3D<Type> &other);
+    V3D<Type> operator+(const V3D<Type> &other) const;
 
-    V3D<Type> operator-(const V3D<Type> &other);
+    V3D<Type> operator-(const V3D<Type> &other) const;
 
-    V3D<Type> operator*(Type scalar);
+    V3D<Type> operator*(Type scalar) const;
 
     void operator=(const V3D<Type> &other);
 

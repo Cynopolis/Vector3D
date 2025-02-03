@@ -47,7 +47,7 @@ V3D<Type>::V3D(const V3D<OtherType> &other)
 }
 
 template <typename Type>
-std::array<Type, 3> V3D<Type>::ToArray()
+std::array<Type, 3> V3D<Type>::ToArray() const
 {
     return {this->x, this->y, this->z};
 }
@@ -61,19 +61,19 @@ void V3D<Type>::operator=(const V3D<Type> &other)
 }
 
 template <typename Type>
-V3D<Type> V3D<Type>::operator+(const V3D<Type> &other)
+V3D<Type> V3D<Type>::operator+(const V3D<Type> &other) const
 {
     return V3D<Type>{this->x + other.x, this->y + other.y, this->z + other.z};
 }
 
 template <typename Type>
-V3D<Type> V3D<Type>::operator-(const V3D<Type> &other)
+V3D<Type> V3D<Type>::operator-(const V3D<Type> &other) const
 {
     return V3D<Type>{this->x - other.x, this->y - other.y, this->z - other.z};
 }
 
 template <typename Type>
-V3D<Type> V3D<Type>::operator*(Type scalar)
+V3D<Type> V3D<Type>::operator*(Type scalar) const
 {
     return V3D<Type>{this->x * scalar, this->y * scalar, this->z * scalar};
 }
