@@ -79,6 +79,12 @@ V3D<Type> V3D<Type>::operator*(Type scalar) const
 }
 
 template <typename Type>
+V3D<Type> V3D<Type>::operator/(Type scalar) const
+{
+    return V3D<Type>{this->x / scalar, this->y / scalar, this->z / scalar};
+}
+
+template <typename Type>
 V3D<Type> &V3D<Type>::operator+=(const V3D<Type> &other)
 {
     *this = *this + other;

@@ -26,6 +26,8 @@ public:
 
     V3D<Type> operator*(Type scalar) const;
 
+    V3D<Type> operator/(Type scalar) const;
+
     void operator=(const V3D<Type> &other);
 
     V3D<Type> &operator+=(const V3D<Type> &other);
