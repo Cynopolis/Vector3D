@@ -12,9 +12,19 @@ FetchContent_Declare(
  
 FetchContent_MakeAvailable(Catch2)
  
+# matrix tests
 add_executable(matrix-tests matrix-tests.cpp)
  
 target_link_libraries(matrix-tests 
+    PRIVATE 
+    vector-3d-intf
+    Catch2::Catch2WithMain
+)
+
+# vector tests
+add_executable(vector-tests vector-tests.cpp)
+ 
+target_link_libraries(vector-tests 
     PRIVATE 
     vector-3d-intf
     Catch2::Catch2WithMain

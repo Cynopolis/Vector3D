@@ -37,21 +37,11 @@ set_target_properties(matrix
 # Vector3d
 add_library(vector-3d 
     STATIC
-    Vector3D.hpp
-)
-
-target_include_directories(vector-3d 
-    PUBLIC
-    .
+    Vector3D.cpp
 )
 
 target_link_libraries(vector-3d
     PUBLIC
     vector-3d-intf
     PRIVATE
-)
-
-set_target_properties(vector-3d
-    PROPERTIES
-    LINKER_LANGUAGE CXX
 )
