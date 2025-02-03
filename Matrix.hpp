@@ -9,7 +9,9 @@
 // TODO: Add a function for SVD decomposition
 // TODO: Add a function for LQ decomposition
 
-template <uint8_t rows, uint8_t columns> class Matrix {
+template <uint8_t rows, uint8_t columns>
+class Matrix
+{
 public:
   /**
    * @brief create a matrix but leave all of its values unitialized
@@ -34,7 +36,8 @@ public:
   /**
    * @brief Initialize a matrix directly with any number of arguments
    */
-  template <typename... Args> Matrix(Args... args);
+  template <typename... Args>
+  Matrix(Args... args);
   /**
    * @brief Set all elements in this to value
    */
@@ -95,8 +98,8 @@ public:
                                        Matrix<rows, columns> &result) const;
 
   Matrix<rows - 1, columns - 1> &
-      MinorMatrix(Matrix<rows - 1, columns - 1> &result, uint8_t row_idx,
-                  uint8_t column_idx) const;
+  MinorMatrix(Matrix<rows - 1, columns - 1> &result, uint8_t row_idx,
+              uint8_t column_idx) const;
 
   /**
    * @return Get the determinant of the matrix
