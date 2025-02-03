@@ -1,0 +1,20 @@
+{
+    "name": "Vector3D",
+    "version": "1.0.0",
+    "description": "Contains a V3D object for easy 3d vector math and a Matrix object for more complicated linear algebra operations.",
+    "keywords": "linear algebra, vector, matrix, 3D",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/Cynopolis/Vector3D.git"
+    },
+    "authors": [
+        {
+            "name": "Cynopolis",
+            "email": "megaveganzombie@gmail.com",
+            "url": "https://github.com/Cynopolis"
+        }
+    ],
+    "license": "None Yet",
+    "frameworks": "*",
+    "platforms": "*"
+}
