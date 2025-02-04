@@ -2,6 +2,7 @@
                    // will evaluate to true
 #include <cmath>
 #include <type_traits>
+#include <string>
 
 template <typename Type>
 V3D<Type>::V3D(const Matrix<1, 3> &other)
@@ -61,9 +62,21 @@ void V3D<Type>::operator=(const V3D<Type> &other)
 }
 
 template <typename Type>
+V3D<Type> V3D<Type>::operator+(Type other) const
+{
+    return V3D<Type>{this->x + other, this->y + other, this->z + other};
+}
+
+template <typename Type>
 V3D<Type> V3D<Type>::operator+(const V3D<Type> &other) const
 {
     return V3D<Type>{this->x + other.x, this->y + other.y, this->z + other.z};
+}
+
+template <typename Type>
+V3D<Type> V3D<Type>::operator-(Type other) const
+{
+    return V3D<Type>{this->x - other, this->y - other, this->z - other};
 }
 
 template <typename Type>
@@ -85,9 +98,23 @@ V3D<Type> V3D<Type>::operator/(Type scalar) const
 }
 
 template <typename Type>
+V3D<Type> &V3D<Type>::operator+=(Type other)
+{
+    *this = *this + other;
+    return *this;
+}
+
+template <typename Type>
 V3D<Type> &V3D<Type>::operator+=(const V3D<Type> &other)
 {
     *this = *this + other;
+    return *this;
+}
+
+template <typename Type>
+V3D<Type> &V3D<Type>::operator-=(Type other)
+{
+    *this = *this - other;
     return *this;
 }
 
