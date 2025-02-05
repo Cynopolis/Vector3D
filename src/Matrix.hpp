@@ -67,8 +67,8 @@ public:
    * @param result A buffer to store the result into
    */
   template <uint8_t other_columns>
-  Matrix<rows, columns> &Mult(const Matrix<columns, other_columns> &other,
-                              Matrix<rows, other_columns> &result) const;
+  Matrix<rows, other_columns> &Mult(const Matrix<columns, other_columns> &other,
+                                    Matrix<rows, other_columns> &result) const;
 
   /**
    * @brief Multiply the matrix by a scalar

@@ -6,6 +6,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <type_traits>
+#include <cstring>
 
 template <uint8_t rows, uint8_t columns>
 Matrix<rows, columns>::Matrix(float value)
@@ -104,7 +105,7 @@ Matrix<rows, columns>::Sub(const Matrix<rows, columns> &other,
 
 template <uint8_t rows, uint8_t columns>
 template <uint8_t other_columns>
-Matrix<rows, columns> &
+Matrix<rows, other_columns> &
 Matrix<rows, columns>::Mult(const Matrix<columns, other_columns> &other,
                             Matrix<rows, other_columns> &result) const
 {
