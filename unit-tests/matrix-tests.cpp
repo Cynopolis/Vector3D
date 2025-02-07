@@ -10,13 +10,15 @@
 #include <cmath>
 #include <iostream>
 
-TEST_CASE("Elementary Matrix Operations", "Matrix") {
+TEST_CASE("Elementary Matrix Operations", "Matrix")
+{
   std::array<float, 4> arr2{5, 6, 7, 8};
   Matrix<2, 2> mat1{1, 2, 3, 4};
   Matrix<2, 2> mat2{arr2};
   Matrix<2, 2> mat3{};
 
-  SECTION("Initialization") {
+  SECTION("Initialization")
+  {
     // array initialization
     REQUIRE(mat1.Get(0, 0) == 1);
     REQUIRE(mat1.Get(0, 1) == 2);
@@ -38,14 +40,17 @@ TEST_CASE("Elementary Matrix Operations", "Matrix") {
     // large matrix
     Matrix<255, 255> mat6{};
     mat6.Fill(4);
-    for (uint8_t row{0}; row < 255; row++) {
-      for (uint8_t column{0}; column < 255; column++) {
+    for (uint8_t row{0}; row < 255; row++)
+    {
+      for (uint8_t column{0}; column < 255; column++)
+      {
         REQUIRE(mat6.Get(row, column) == 4);
       }
     }
   }
 
-  SECTION("Fill") {
+  SECTION("Fill")
+  {
     mat1.Fill(0);
     REQUIRE(mat1.Get(0, 0) == 0);
     REQUIRE(mat1.Get(0, 1) == 0);
@@ -65,10 +70,12 @@ TEST_CASE("Elementary Matrix Operations", "Matrix") {
     REQUIRE(mat3.Get(1, 1) == -20);
   }
 
-  SECTION("Addition") {
+  SECTION("Addition")
+  {
     std::string strBuf1 = "";
     mat1.ToString(strBuf1);
-    std::cout << "Matrix 1:\n" << strBuf1 << std::endl;
+    std::cout << "Matrix 1:\n"
+              << strBuf1 << std::endl;
 
     mat1.Add(mat2, mat3);
 
@@ -86,7 +93,8 @@ TEST_CASE("Elementary Matrix Operations", "Matrix") {
     REQUIRE(mat3.Get(1, 1) == 12);
   }
 
-  SECTION("Subtraction") {
+  SECTION("Subtraction")
+  {
     mat1.Sub(mat2, mat3);
 
     REQUIRE(mat3.Get(0, 0) == -4);
@@ -103,7 +111,8 @@ TEST_CASE("Elementary Matrix Operations", "Matrix") {
     REQUIRE(mat3.Get(1, 1) == -4);
   }
 
-  SECTION("Multiplication") {
+  SECTION("Multiplication")
+  {
     mat1.Mult(mat2, mat3);
 
     REQUIRE(mat3.Get(0, 0) == 19);
@@ -118,9 +127,12 @@ TEST_CASE("Elementary Matrix Operations", "Matrix") {
     REQUIRE(mat3.Get(0, 1) == 22);
     REQUIRE(mat3.Get(1, 0) == 43);
     REQUIRE(mat3.Get(1, 1) == 50);
+
+    // TODO: You need to add non-square multiplications to this.
   }
 
-  SECTION("Scalar Multiplication") {
+  SECTION("Scalar Multiplication")
+  {
     mat1.Mult(2, mat3);
 
     REQUIRE(mat3.Get(0, 0) == 2);
@@ -129,7 +141,8 @@ TEST_CASE("Elementary Matrix Operations", "Matrix") {
     REQUIRE(mat3.Get(1, 1) == 8);
   }
 
-  SECTION("Element Multiply") {
+  SECTION("Element Multiply")
+  {
     mat1.ElementMultiply(mat2, mat3);
 
     REQUIRE(mat3.Get(0, 0) == 5);
@@ -138,7 +151,8 @@ TEST_CASE("Elementary Matrix Operations", "Matrix") {
     REQUIRE(mat3.Get(1, 1) == 32);
   }
 
-  SECTION("Element Divide") {
+  SECTION("Element Divide")
+  {
     mat1.ElementDivide(mat2, mat3);
 
     REQUIRE_THAT(mat3.Get(0, 0), Catch::Matchers::WithinRel(0.2f, 1e-6f));
@@ -147,7 +161,8 @@ TEST_CASE("Elementary Matrix Operations", "Matrix") {
     REQUIRE_THAT(mat3.Get(1, 1), Catch::Matchers::WithinRel(0.5f, 1e-6f));
   }
 
-  SECTION("Minor Matrix") {
+  SECTION("Minor Matrix")
+  {
     // what about matrices of 0,0 or 1,1?
     // minor matrix for 2x2 matrix
     Matrix<1, 1> minorMat1{};
@@ -183,7 +198,8 @@ TEST_CASE("Elementary Matrix Operations", "Matrix") {
     REQUIRE(minorMat4.Get(1, 1) == 5);
   }
 
-  SECTION("Determinant") {
+  SECTION("Determinant")
+  {
     float det1 = mat1.Det();
 
     REQUIRE_THAT(det1, Catch::Matchers::WithinRel(-2.0F, 1e-6f));
@@ -200,7 +216,8 @@ TEST_CASE("Elementary Matrix Operations", "Matrix") {
     REQUIRE_THAT(det5, Catch::Matchers::WithinRel(6.0F, 1e-6f));
   }
 
-  SECTION("Matrix of Minors") {
+  SECTION("Matrix of Minors")
+  {
     mat1.MatrixOfMinors(mat3);
     REQUIRE_THAT(mat3.Get(0, 0), Catch::Matchers::WithinRel(4.0F, 1e-6f));
     REQUIRE_THAT(mat3.Get(0, 1), Catch::Matchers::WithinRel(3.0F, 1e-6f));
@@ -221,7 +238,8 @@ TEST_CASE("Elementary Matrix Operations", "Matrix") {
     REQUIRE_THAT(mat5.Get(2, 2), Catch::Matchers::WithinRel(-3.0F, 1e-6f));
   }
 
-  SECTION("Invert") {
+  SECTION("Invert")
+  {
     mat1.Invert(mat3);
     REQUIRE_THAT(mat3.Get(0, 0), Catch::Matchers::WithinRel(-2.0F, 1e-6f));
     REQUIRE_THAT(mat3.Get(0, 1), Catch::Matchers::WithinRel(1.0F, 1e-6f));
@@ -229,7 +247,8 @@ TEST_CASE("Elementary Matrix Operations", "Matrix") {
     REQUIRE_THAT(mat3.Get(1, 1), Catch::Matchers::WithinRel(-0.5F, 1e-6f));
   };
 
-  SECTION("Transpose") {
+  SECTION("Transpose")
+  {
     // transpose a square matrix
     mat1.Transpose(mat3);
 
@@ -252,7 +271,8 @@ TEST_CASE("Elementary Matrix Operations", "Matrix") {
     REQUIRE(mat5.Get(2, 1) == 6);
   }
 
-  SECTION("Normalize") {
+  SECTION("Normalize")
+  {
     mat1.Normalize(mat3);
 
     float sqrt_30{sqrt(30)};
@@ -272,7 +292,8 @@ TEST_CASE("Elementary Matrix Operations", "Matrix") {
                  Catch::Matchers::WithinRel(0.957591346325f, 1e-6f));
   }
 
-  SECTION("GET ROW") {
+  SECTION("GET ROW")
+  {
     Matrix<1, 2> mat1Rows{};
     mat1.GetRow(0, mat1Rows);
     REQUIRE(mat1Rows.Get(0, 0) == 1);
@@ -283,7 +304,8 @@ TEST_CASE("Elementary Matrix Operations", "Matrix") {
     REQUIRE(mat1Rows.Get(0, 1) == 4);
   }
 
-  SECTION("GET COLUMN") {
+  SECTION("GET COLUMN")
+  {
     Matrix<2, 1> mat1Columns{};
     mat1.GetColumn(0, mat1Columns);
     REQUIRE(mat1Columns.Get(0, 0) == 1);
@@ -297,13 +319,16 @@ TEST_CASE("Elementary Matrix Operations", "Matrix") {
 
 // basically re-run all of the previous tests with huge matrices and time the
 // results.
-TEST_CASE("Timing Tests", "Matrix") {
+TEST_CASE("Timing Tests", "Matrix")
+{
   std::array<float, 50 * 50> arr1{};
-  for (uint16_t i{0}; i < 50 * 50; i++) {
+  for (uint16_t i{0}; i < 50 * 50; i++)
+  {
     arr1[i] = i;
   }
   std::array<float, 50 * 50> arr2{5, 6, 7, 8};
-  for (uint16_t i{50 * 50}; i < 2 * 50 * 50; i++) {
+  for (uint16_t i{50 * 50}; i < 2 * 50 * 50; i++)
+  {
     arr2[i] = i;
   }
   Matrix<50, 50> mat1{arr1};
@@ -314,91 +339,119 @@ TEST_CASE("Timing Tests", "Matrix") {
   Matrix<4, 4> mat4{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
   Matrix<4, 4> mat5{};
 
-  SECTION("Addition") {
-    for (uint32_t i{0}; i < 10000; i++) {
+  SECTION("Addition")
+  {
+    for (uint32_t i{0}; i < 10000; i++)
+    {
       mat3 = mat1 + mat2;
     }
   }
 
-  SECTION("Subtraction") {
-    for (uint32_t i{0}; i < 10000; i++) {
+  SECTION("Subtraction")
+  {
+    for (uint32_t i{0}; i < 10000; i++)
+    {
       mat3 = mat1 - mat2;
     }
   }
 
-  SECTION("Multiplication") {
-    for (uint32_t i{0}; i < 1000; i++) {
+  SECTION("Multiplication")
+  {
+    for (uint32_t i{0}; i < 1000; i++)
+    {
       mat3 = mat1 * mat2;
     }
   }
 
-  SECTION("Scalar Multiplication") {
-    for (uint32_t i{0}; i < 10000; i++) {
+  SECTION("Scalar Multiplication")
+  {
+    for (uint32_t i{0}; i < 10000; i++)
+    {
       mat3 = mat1 * 3;
     }
   }
 
-  SECTION("Element Multiply") {
-    for (uint32_t i{0}; i < 10000; i++) {
+  SECTION("Element Multiply")
+  {
+    for (uint32_t i{0}; i < 10000; i++)
+    {
       mat1.ElementMultiply(mat2, mat3);
     }
   }
 
-  SECTION("Element Divide") {
-    for (uint32_t i{0}; i < 10000; i++) {
+  SECTION("Element Divide")
+  {
+    for (uint32_t i{0}; i < 10000; i++)
+    {
       mat1.ElementDivide(mat2, mat3);
     }
   }
 
-  SECTION("Minor Matrix") {
+  SECTION("Minor Matrix")
+  {
     // what about matrices of 0,0 or 1,1?
     // minor matrix for 2x2 matrix
     Matrix<49, 49> minorMat1{};
-    for (uint32_t i{0}; i < 10000; i++) {
+    for (uint32_t i{0}; i < 10000; i++)
+    {
       mat1.MinorMatrix(minorMat1, 0, 0);
     }
   }
 
-  SECTION("Determinant") {
-    for (uint32_t i{0}; i < 100000; i++) {
+  SECTION("Determinant")
+  {
+    for (uint32_t i{0}; i < 100000; i++)
+    {
       float det1 = mat4.Det();
     }
   }
 
-  SECTION("Matrix of Minors") {
-    for (uint32_t i{0}; i < 100000; i++) {
+  SECTION("Matrix of Minors")
+  {
+    for (uint32_t i{0}; i < 100000; i++)
+    {
       mat4.MatrixOfMinors(mat5);
     }
   }
 
-  SECTION("Invert") {
-    for (uint32_t i{0}; i < 100000; i++) {
+  SECTION("Invert")
+  {
+    for (uint32_t i{0}; i < 100000; i++)
+    {
       mat4.Invert(mat5);
     }
   };
 
-  SECTION("Transpose") {
-    for (uint32_t i{0}; i < 10000; i++) {
+  SECTION("Transpose")
+  {
+    for (uint32_t i{0}; i < 10000; i++)
+    {
       mat1.Transpose(mat3);
     }
   }
 
-  SECTION("Normalize") {
-    for (uint32_t i{0}; i < 10000; i++) {
+  SECTION("Normalize")
+  {
+    for (uint32_t i{0}; i < 10000; i++)
+    {
       mat1.Normalize(mat3);
     }
   }
 
-  SECTION("GET ROW") {
+  SECTION("GET ROW")
+  {
     Matrix<1, 50> mat1Rows{};
-    for (uint32_t i{0}; i < 1000000; i++) {
+    for (uint32_t i{0}; i < 1000000; i++)
+    {
       mat1.GetRow(0, mat1Rows);
     }
   }
 
-  SECTION("GET COLUMN") {
+  SECTION("GET COLUMN")
+  {
     Matrix<50, 1> mat1Columns{};
-    for (uint32_t i{0}; i < 1000000; i++) {
+    for (uint32_t i{0}; i < 1000000; i++)
+    {
       mat1.GetColumn(0, mat1Columns);
     }
   }

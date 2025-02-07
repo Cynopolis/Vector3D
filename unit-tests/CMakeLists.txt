@@ -17,7 +17,7 @@ add_executable(matrix-tests matrix-tests.cpp)
  
 target_link_libraries(matrix-tests 
     PRIVATE 
-    vector-3d-intf
+    matrix-intf
     Catch2::Catch2WithMain
 )
 
@@ -26,6 +26,7 @@ add_executable(vector-tests vector-tests.cpp)
  
 target_link_libraries(vector-tests 
     PRIVATE 
+    matrix-intf
     vector-3d-intf
     Catch2::Catch2WithMain
 )
