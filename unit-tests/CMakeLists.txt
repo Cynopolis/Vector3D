@@ -36,6 +36,6 @@ add_executable(quaternion-tests quaternion-tests.cpp)
  
 target_link_libraries(quaternion-tests 
     PRIVATE 
-    quaternion-intf
+    quaternion
     Catch2::Catch2WithMain
 )

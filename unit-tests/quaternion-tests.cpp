@@ -52,4 +52,55 @@ TEST_CASE("Vector Math", "Vector")
         REQUIRE(q6.v3 == 3);
         REQUIRE(q6.w == 4);
     }
+
+    SECTION("Array access")
+    {
+        REQUIRE(q1[0] == 1);
+        REQUIRE(q1[1] == 2);
+        REQUIRE(q1[2] == 3);
+        REQUIRE(q1[3] == 4);
+    }
+
+    SECTION("Addition")
+    {
+        Quaternion q3 = q1 + q2;
+        REQUIRE(q3.v1 == 5);
+        REQUIRE(q3.v2 == 12);
+        REQUIRE(q3.v3 == 21);
+        REQUIRE(q3.w == 32);
+    }
+
+    SECTION("Rotation")
+    {
+        Quaternion q3;
+        q1.Rotate(q2, q3);
+        REQUIRE(q3.v1 == -24);
+        REQUIRE(q3.v2 == 48);
+        REQUIRE(q3.v3 == 48);
+        REQUIRE(q3.w == -6);
+    }
+
+    SECTION("Euler Angles")
+    {
+        Matrix<1, 3> angles;
+        q1.ToEulerAngles(angles);
+        REQUIRE_THAT(angles.Get(0, 0), Catch::Matchers::WithinRel(-0.1973956f, 1e-6f));
+        REQUIRE_THAT(angles.Get(0, 1), Catch::Matchers::WithinRel(0.823212f, 1e-6f));
+        REQUIRE_THAT(angles.Get(0, 2), Catch::Matchers::WithinRel(1.3734008f, 1e-6f));
+    }
+
+    SECTION("Rotation Matrix")
+    {
+        Matrix<3, 3> rotationMatrix;
+        q1.ToRotationMatrix(rotationMatrix);
+        REQUIRE_THAT(rotationMatrix.Get(0, 0), Catch::Matchers::WithinRel(0.1333333f, 1e-6f));
+        REQUIRE_THAT(rotationMatrix.Get(0, 1), Catch::Matchers::WithinRel(-0.6666667f, 1e-6f));
+        REQUIRE_THAT(rotationMatrix.Get(0, 2), Catch::Matchers::WithinRel(0.7333333f, 1e-6f));
+        REQUIRE_THAT(rotationMatrix.Get(1, 0), Catch::Matchers::WithinRel(0.9333333f, 1e-6f));
+        REQUIRE_THAT(rotationMatrix.Get(1, 1), Catch::Matchers::WithinRel(0.3333333f, 1e-6f));
+        REQUIRE_THAT(rotationMatrix.Get(1, 2), Catch::Matchers::WithinRel(0.1333333f, 1e-6f));
+        REQUIRE_THAT(rotationMatrix.Get(2, 0), Catch::Matchers::WithinRel(-0.3333333f, 1e-6f));
+        REQUIRE_THAT(rotationMatrix.Get(2, 1), Catch::Matchers::WithinRel(0.6666667f, 1e-6f));
+        REQUIRE_THAT(rotationMatrix.Get(2, 2), Catch::Matchers::WithinRel(0.6666667f, 1e-6f));
+    }
 }

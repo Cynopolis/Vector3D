@@ -13,10 +13,40 @@ public:
     Quaternion(const Matrix<1, 4> &matrix) : Matrix<1, 4>(matrix) {}
     Quaternion(const std::array<float, 4> &array) : Matrix<1, 4>(array) {}
 
+    /**
+     * @brief Access the elements of the quaternion
+     * @param index The index of the element to access
+     * @return The value of the element at the index
+     */
     float operator[](uint8_t index);
+
+    /**
+     * @brief Add two quaternions together
+     * @param other The quaternion to add to this one
+     * @return The net quaternion
+     */
     Quaternion operator+(const Quaternion &other);
+
+    /**
+     * @brief Rotate a quaternion by another quaternion
+     * @param other The quaternion to rotate by
+     * @param buffer The buffer to store the result in
+     * @return A reference to the buffer
+     */
     Quaternion &Rotate(Quaternion &other, Quaternion &buffer);
+
+    /**
+     * @brief Calculate the Euler angles from the quaternion
+     * @param angleBuffer The buffer to store the angles in
+     * @return A reference to the buffer
+     */
     Matrix<1, 3> &ToEulerAngles(Matrix<1, 3> &angleBuffer);
+
+    /**
+     * @brief Convert the quaternion to a rotation matrix
+     * @param rotationMatrixBuffer The buffer to store the rotation matrix in
+     * @return A reference to the buffer
+     */
     Matrix<3, 3> &ToRotationMatrix(Matrix<3, 3> &rotationMatrixBuffer);
 
     // Give people an easy way to access the elements
