@@ -30,3 +30,12 @@ target_link_libraries(vector-tests
     vector-3d-intf
     Catch2::Catch2WithMain
 )
+
+# quaternion tests
+add_executable(quaternion-tests quaternion-tests.cpp)
+ 
+target_link_libraries(quaternion-tests 
+    PRIVATE 
+    quaternion-intf
+    Catch2::Catch2WithMain
+)

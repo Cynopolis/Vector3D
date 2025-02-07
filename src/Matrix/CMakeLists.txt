@@ -1,4 +1,4 @@
-# Vector 3D Interface
+# Matrix Interface
 add_library(matrix-intf
     INTERFACE
 )
@@ -16,7 +16,7 @@ add_library(matrix
 
 target_link_libraries(matrix
     PUBLIC
-    vector-3d-intf
+    matrix-intf
     PRIVATE
 )
 

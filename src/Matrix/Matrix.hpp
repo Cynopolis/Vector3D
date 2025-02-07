@@ -3,6 +3,7 @@
 
 #include <array>
 #include <cstdint>
+#include <string>
 
 // TODO: Add a function to calculate eigenvalues/vectors
 // TODO: Add a function to compute RREF
@@ -186,6 +187,9 @@ public:
 
   Matrix<rows, columns> operator*(float scalar) const;
 
+protected:
+  std::array<float, rows * columns> matrix;
+
 private:
   /**
    * @brief take the dot product of the two vectors
@@ -201,8 +205,6 @@ private:
   Matrix<rows, columns> &adjugate(Matrix<rows, columns> &result) const;
 
   void setMatrixToArray(const std::array<float, rows * columns> &array);
-
-  std::array<float, rows * columns> matrix;
 };
 
 #include "Matrix.cpp"
