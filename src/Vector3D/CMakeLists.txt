@@ -19,3 +19,13 @@ target_link_libraries(vector-3d
     vector-3d-intf
     PRIVATE
 )
+
+# vector tests
+add_executable(vector-tests unit-tests/vector-tests.cpp)
+ 
+target_link_libraries(vector-tests 
+    PRIVATE 
+    matrix-intf
+    vector-3d-intf
+    Catch2::Catch2WithMain
+)

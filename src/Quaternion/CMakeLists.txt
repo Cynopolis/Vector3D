@@ -29,3 +29,12 @@ set_target_properties(quaternion
     PROPERTIES
     LINKER_LANGUAGE CXX
 )
+
+# Quaternion tests
+add_executable(quaternion-tests unit-tests/quaternion-tests.cpp)
+ 
+target_link_libraries(quaternion-tests 
+    PRIVATE 
+    quaternion
+    Catch2::Catch2WithMain
+)
