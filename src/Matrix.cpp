@@ -111,8 +111,8 @@ Matrix<rows, columns>::Mult(const Matrix<columns, other_columns> &other,
 {
   // allocate some buffers for all of our dot products
   Matrix<1, columns> this_row;
-  Matrix<rows, 1> other_column;
-  Matrix<1, rows> other_column_t;
+  Matrix<columns, 1> other_column;
+  Matrix<1, columns> other_column_t;
 
   for (uint8_t row_idx{0}; row_idx < rows; row_idx++)
   {
@@ -371,10 +371,11 @@ operator-(const Matrix<rows, columns> &other) const
 }
 
 template <uint8_t rows, uint8_t columns>
-Matrix<rows, columns> Matrix<rows, columns>::
-operator*(const Matrix<rows, columns> &other) const
+template <uint8_t other_columns>
+Matrix<rows, other_columns> Matrix<rows, columns>::
+operator*(const Matrix<columns, other_columns> &other) const
 {
-  Matrix<rows, columns> buffer{};
+  Matrix<rows, other_columns> buffer{};
   this->Mult(other, buffer);
   return buffer;
 }

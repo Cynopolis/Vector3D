@@ -181,7 +181,8 @@ public:
 
   Matrix<rows, columns> operator-(const Matrix<rows, columns> &other) const;
 
-  Matrix<rows, columns> operator*(const Matrix<rows, columns> &other) const;
+  template <uint8_t other_columns>
+  Matrix<rows, other_columns> operator*(const Matrix<columns, other_columns> &other) const;
 
   Matrix<rows, columns> operator*(float scalar) const;
 
