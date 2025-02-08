@@ -4,12 +4,14 @@
         {
             "label": "build_tests",
             "type": "shell",
-            "command": "cd build && ninja matrix-tests",
+            "command": "cd build && ninja",
             "group": {
                 "kind": "build",
                 "isDefault": true
             },
-            "problemMatcher": ["$gcc"],
+            "problemMatcher": [
+                "$gcc"
+            ],
             "detail": "Generated task to build unit test executable"
         }
     ]

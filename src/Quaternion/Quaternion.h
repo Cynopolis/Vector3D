@@ -8,10 +8,17 @@ class Quaternion : public Matrix<1, 4>
 public:
     Quaternion() : Matrix<1, 4>() {}
     Quaternion(float fillValue) : Matrix<1, 4>(fillValue) {}
-    Quaternion(float v1, float v2, float v3, float w) : Matrix<1, 4>(v1, v2, v3, w) {}
-    Quaternion(const Quaternion &q) : Matrix<1, 4>(q.v1, q.v2, q.v3, q.w) {}
+    Quaternion(float w, float v1, float v2, float v3) : Matrix<1, 4>(w, v1, v2, v3) {}
+    Quaternion(const Quaternion &q) : Matrix<1, 4>(q.w, q.v1, q.v2, q.v3) {}
     Quaternion(const Matrix<1, 4> &matrix) : Matrix<1, 4>(matrix) {}
     Quaternion(const std::array<float, 4> &array) : Matrix<1, 4>(array) {}
+
+    /**
+     * @brief Create a quaternion from an angle and axis
+     * @param angle The angle to rotate by
+     * @param axis The axis to rotate around
+     */
+    static Quaternion FromAngleAndAxis(float angle, const Matrix<1, 3> &axis);
 
     /**
      * @brief Access the elements of the quaternion
@@ -36,7 +43,7 @@ public:
     Quaternion &Q_Mult(Quaternion &other, Quaternion &buffer) const;
 
     /**
-     * @brief Rotate a quaternion by another quaternion
+     * @brief Rotate a quaternion by this quaternion
      * @param other The quaternion to rotate
      * @param buffer The buffer to store the result in
      *
@@ -44,24 +51,15 @@ public:
     Quaternion &Rotate(Quaternion &other, Quaternion &buffer) const;
 
     /**
-     * @brief Calculate the Euler angles from the quaternion
-     * @param angleBuffer The buffer to store the angles in
-     * @return A reference to the buffer
+     * @brief Normalize the quaternion to a magnitude of 1
      */
-    Matrix<1, 3> &ToEulerAngles(Matrix<1, 3> &angleBuffer) const;
-
-    /**
-     * @brief Convert the quaternion to a rotation matrix
-     * @param rotationMatrixBuffer The buffer to store the rotation matrix in
-     * @return A reference to the buffer
-     */
-    Matrix<3, 3> &ToRotationMatrix(Matrix<3, 3> &rotationMatrixBuffer) const;
+    void Normalize();
 
     // Give people an easy way to access the elements
-    float &v1{matrix[0]};
-    float &v2{matrix[1]};
-    float &v3{matrix[2]};
-    float &w{matrix[3]};
+    float &w{matrix[0]};
+    float &v1{matrix[1]};
+    float &v2{matrix[2]};
+    float &v3{matrix[3]};
 };
 
 #endif // QUATERNION_H_
