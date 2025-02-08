@@ -73,8 +73,8 @@ TEST_CASE("Vector Math", "Vector")
     SECTION("Rotation")
     {
         Quaternion q3;
-        q1.Rotate(q2, q3);
-        REQUIRE(q3.v1 == -24);
+        q1.Q_Mult(q2, q3);
+        REQUIRE(q3.v1 == 24);
         REQUIRE(q3.v2 == 48);
         REQUIRE(q3.v3 == 48);
         REQUIRE(q3.w == -6);

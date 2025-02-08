@@ -18,44 +18,50 @@ public:
      * @param index The index of the element to access
      * @return The value of the element at the index
      */
-    float operator[](uint8_t index);
+    float operator[](uint8_t index) const;
 
     /**
      * @brief Add two quaternions together
      * @param other The quaternion to add to this one
      * @return The net quaternion
      */
-    Quaternion operator+(const Quaternion &other);
+    Quaternion operator+(const Quaternion &other) const;
 
     /**
-     * @brief Rotate a quaternion by another quaternion
+     * @brief Q_Mult a quaternion by another quaternion
      * @param other The quaternion to rotate by
      * @param buffer The buffer to store the result in
      * @return A reference to the buffer
      */
-    Quaternion &Rotate(Quaternion &other, Quaternion &buffer);
+    Quaternion &Q_Mult(Quaternion &other, Quaternion &buffer) const;
+
+    /**
+     * @brief Rotate a quaternion by another quaternion
+     * @param other The quaternion to rotate
+     * @param buffer The buffer to store the result in
+     *
+     */
+    Quaternion &Rotate(Quaternion &other, Quaternion &buffer) const;
 
     /**
      * @brief Calculate the Euler angles from the quaternion
      * @param angleBuffer The buffer to store the angles in
      * @return A reference to the buffer
      */
-    Matrix<1, 3> &ToEulerAngles(Matrix<1, 3> &angleBuffer);
+    Matrix<1, 3> &ToEulerAngles(Matrix<1, 3> &angleBuffer) const;
 
     /**
      * @brief Convert the quaternion to a rotation matrix
      * @param rotationMatrixBuffer The buffer to store the rotation matrix in
      * @return A reference to the buffer
      */
-    Matrix<3, 3> &ToRotationMatrix(Matrix<3, 3> &rotationMatrixBuffer);
+    Matrix<3, 3> &ToRotationMatrix(Matrix<3, 3> &rotationMatrixBuffer) const;
 
     // Give people an easy way to access the elements
     float &v1{matrix[0]};
     float &v2{matrix[1]};
     float &v3{matrix[2]};
     float &w{matrix[3]};
-
-private:
 };
 
 #endif // QUATERNION_H_

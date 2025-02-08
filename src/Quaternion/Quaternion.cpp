@@ -1,7 +1,7 @@
 #include "Quaternion.h"
 #include <cmath>
 
-float Quaternion::operator[](uint8_t index)
+float Quaternion::operator[](uint8_t index) const
 {
     if (index < 4)
     {
@@ -12,24 +12,36 @@ float Quaternion::operator[](uint8_t index)
     return 1e+6;
 }
 
-Quaternion Quaternion::operator+(const Quaternion &other)
+Quaternion Quaternion::operator+(const Quaternion &other) const
 {
     return Quaternion{this->v1 * other.v1, this->v2 * other.v2, this->v3 * other.v3, this->w * other.w};
 }
 
 Quaternion &
-Quaternion::Rotate(Quaternion &other, Quaternion &buffer)
+Quaternion::Q_Mult(Quaternion &other, Quaternion &buffer) const
 {
+
     // eq. 6
-    buffer.v1 = this->w * other.v1 + other.w * this->v1 - this->v2 * other.v3 + this->v3 * other.v2;
-    buffer.v2 = this->w * other.v2 + other.w * this->v2 - this->v3 * other.v1 + this->v1 * other.v3;
-    buffer.v3 = this->w * other.v3 + other.w * this->v3 - this->v1 * other.v2 + this->v2 * other.v1;
-    buffer.w = this->w * other.w - this->v1 * other.v1 - this->v2 * other.v2 - this->v3 * other.v3;
+    buffer.w = (other.w * this->w - other.v1 * this->v1 - other.v2 * this->v2 - other.v3 * this->v3);
+    buffer.v1 = (other.w * this->v1 + other.v1 * this->w - other.v2 * this->v3 + other.v3 * this->v2);
+    buffer.v2 = (other.w * this->v2 + other.v1 * this->v3 + other.v2 * this->w - other.v3 * this->v1);
+    buffer.v3 = (other.w * this->v3 - other.v1 * this->v2 + other.v2 * this->v1 + other.v3 * this->w);
+    return buffer;
+}
+
+Quaternion &Quaternion::Rotate(Quaternion &other, Quaternion &buffer) const
+{
+    Quaternion prime{-this->v1, -this->v2, -this->v3, this->w};
+    static_cast<Matrix<1, 4>>(buffer) = static_cast<Matrix<1, 4>>(other);
+    buffer.w = 0;
+    Quaternion temp{};
+    this->Q_Mult(buffer, temp);
+    temp.Q_Mult(prime, buffer);
     return buffer;
 }
 
 Matrix<1, 3> &
-Quaternion::ToEulerAngles(Matrix<1, 3> &angleBuffer)
+Quaternion::ToEulerAngles(Matrix<1, 3> &angleBuffer) const
 {
     // from https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
     // rotation sequence R = Rx * Ry * Rz
@@ -53,7 +65,7 @@ Quaternion::ToEulerAngles(Matrix<1, 3> &angleBuffer)
     return angleBuffer;
 }
 
-Matrix<3, 3> &Quaternion::ToRotationMatrix(Matrix<3, 3> &rotationMatrixBuffer)
+Matrix<3, 3> &Quaternion::ToRotationMatrix(Matrix<3, 3> &rotationMatrixBuffer) const
 {
     // eq. 4
     // from https://www.euclideanspace.com/maths/geometry/rotations/conversions/quaternionToMatrix/index.htm
