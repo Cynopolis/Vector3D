@@ -39,6 +39,12 @@ public:
    */
   template <typename... Args>
   Matrix(Args... args);
+
+  /**
+   * @brief set the matrix diagonals to 1 and all other values to 0
+   */
+  void Identity();
+
   /**
    * @brief Set all elements in this to value
    */
@@ -115,13 +121,13 @@ public:
    * @param result A buffer to store the result into
    * @warning this is super slow! Only call it if you absolutely have to!!!
    */
-  Matrix<rows, columns> &Invert(Matrix<rows, columns> &result) const;
+  Matrix<rows, columns> Invert() const;
 
   /**
    * @brief Transpose this matrix
    * @param result A buffer to store the result into
    */
-  Matrix<columns, rows> &Transpose(Matrix<columns, rows> &result) const;
+  Matrix<columns, rows> Transpose() const;
 
   /**
    * @brief reduce the matrix so the sum of its elements equal 1
@@ -187,6 +193,12 @@ public:
 
   Matrix<rows, columns> operator*(float scalar) const;
 
+  template <uint8_t sub_rows, uint8_t sub_columns>
+  Matrix<sub_rows, sub_columns> &SubMatrix(Matrix<sub_rows, sub_columns> &buffer, uint8_t row_offset, uint8_t column_offset) const;
+
+  template <uint8_t sub_rows, uint8_t sub_columns>
+  void SetSubMatrix(const Matrix<sub_rows, sub_columns> &sub_matrix, uint8_t row_offset, uint8_t column_offset);
+
 protected:
   std::array<float, rows * columns> matrix;
 
@@ -201,6 +213,9 @@ private:
   template <uint8_t vector_size>
   static float dotProduct(const Matrix<vector_size, 1> &vec1,
                           const Matrix<vector_size, 1> &vec2);
+
+  static float dotProduct(const Matrix<1, 1> &vec1,
+                          const Matrix<1, 1> &vec2) { return vec1.Get(0, 0) * vec2.Get(0, 0); }
 
   Matrix<rows, columns> &adjugate(Matrix<rows, columns> &result) const;
 

@@ -30,13 +30,30 @@ float Quaternion::operator[](uint8_t index) const
     return 1e+6;
 }
 
+void Quaternion::operator=(const Quaternion &other) const
+{
+    static_cast<Matrix<1, 4>>(this->matrix) = static_cast<Matrix<1, 4>>(other.matrix);
+}
+
+Quaternion Quaternion::operator*(const Quaternion &other) const
+{
+    Quaternion result{};
+    this->Q_Mult(other, result);
+    return result;
+}
+
+Quaternion Quaternion::operator*(float scalar) const
+{
+    return Quaternion{this->w * scalar, this->v1 * scalar, this->v2 * scalar, this->v3 * scalar};
+}
+
 Quaternion Quaternion::operator+(const Quaternion &other) const
 {
     return Quaternion{this->w * other.w, this->v1 * other.v1, this->v2 * other.v2, this->v3 * other.v3};
 }
 
 Quaternion &
-Quaternion::Q_Mult(Quaternion &other, Quaternion &buffer) const
+Quaternion::Q_Mult(const Quaternion &other, Quaternion &buffer) const
 {
 
     // eq. 6
@@ -69,3 +86,15 @@ void Quaternion::Normalize()
     this->v3 /= magnitude;
     this->w /= magnitude;
 }
+
+Matrix<3, 3> Quaternion::ToRotationMatrix() const
+{
+    float xx = this->v1 * this->v1;
+    float yy = this->v2 * this->v2;
+    float zz = this->v3 * this->v3;
+    Matrix<3, 3> rotationMatrix{
+        1 - 2 * (yy - zz), 2 * (this->v1 * this->v2 - this->v3 * this->w), 2 * (this->v1 * this->v3 + this->v2 * this->w),
+        2 * (this->v1 * this->v2 + this->v3 * this->w), 1 - 2 * (xx - zz), 2 * (this->v2 * this->v3 - this->v1 * this->w),
+        2 * (this->v1 * this->v3 - this->v2 * this->w), 2 * (this->v2 * this->v3 + this->v1 * this->w), 1 - 2 * (xx - yy)};
+    return rotationMatrix;
+};

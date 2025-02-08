@@ -35,6 +35,16 @@ Matrix<rows, columns>::Matrix(Args... args)
 }
 
 template <uint8_t rows, uint8_t columns>
+void Matrix<rows, columns>::Identity()
+{
+  this->Fill(0);
+  for (uint8_t idx{0}; idx < rows; idx++)
+  {
+    this->matrix[idx * columns + idx] = 1;
+  }
+}
+
+template <uint8_t rows, uint8_t columns>
 Matrix<rows, columns>::Matrix(const Matrix<rows, columns> &other)
 {
   for (uint8_t row_idx{0}; row_idx < rows; row_idx++)
@@ -112,7 +122,6 @@ Matrix<rows, columns>::Mult(const Matrix<columns, other_columns> &other,
   // allocate some buffers for all of our dot products
   Matrix<1, columns> this_row;
   Matrix<columns, 1> other_column;
-  Matrix<1, columns> other_column_t;
 
   for (uint8_t row_idx{0}; row_idx < rows; row_idx++)
   {
@@ -122,12 +131,10 @@ Matrix<rows, columns>::Mult(const Matrix<columns, other_columns> &other,
     {
       // get the other matrix'ss column
       other.GetColumn(column_idx, other_column);
-      // transpose the other matrix's column
-      other_column.Transpose(other_column_t);
 
       // the result's index is equal to the dot product of these two vectors
       result[row_idx][column_idx] =
-          Matrix<rows, columns>::dotProduct(this_row, other_column_t);
+          Matrix<rows, columns>::dotProduct(this_row, other_column.Transpose());
     }
   }
 
@@ -150,14 +157,15 @@ Matrix<rows, columns>::Mult(float scalar, Matrix<rows, columns> &result) const
 }
 
 template <uint8_t rows, uint8_t columns>
-Matrix<rows, columns> &
-Matrix<rows, columns>::Invert(Matrix<rows, columns> &result) const
+Matrix<rows, columns>
+Matrix<rows, columns>::Invert() const
 {
   // since all matrix sizes have to be statically specified at compile time we
   // can do this
   static_assert(rows == columns,
                 "Your matrix isn't square and can't be inverted");
 
+  Matrix<rows, columns> result{};
   // unfortunately we can't calculate this at compile time so we'll just reurn
   // zeros
   float determinant{this->Det()};
@@ -187,9 +195,10 @@ Matrix<rows, columns>::Invert(Matrix<rows, columns> &result) const
 }
 
 template <uint8_t rows, uint8_t columns>
-Matrix<columns, rows> &
-Matrix<rows, columns>::Transpose(Matrix<columns, rows> &result) const
+Matrix<columns, rows>
+Matrix<rows, columns>::Transpose() const
 {
+  Matrix<columns, rows> result{};
   for (uint8_t column_idx{0}; column_idx < rows; column_idx++)
   {
     for (uint8_t row_idx{0}; row_idx < columns; row_idx++)
@@ -340,14 +349,9 @@ template <uint8_t rows, uint8_t columns>
 Matrix<rows, columns> &Matrix<rows, columns>::
 operator=(const Matrix<rows, columns> &other)
 {
-  for (uint8_t row_idx{0}; row_idx < rows; row_idx++)
-  {
-    for (uint8_t column_idx{0}; column_idx < columns; column_idx++)
-    {
-      this->matrix[row_idx * columns + column_idx] =
-          other.Get(row_idx, column_idx);
-    }
-  }
+  memcpy(this->matrix.begin(), other.matrix.begin(),
+         rows * columns * sizeof(float));
+
   // return a reference to ourselves so you can chain together these functions
   return *this;
 }
@@ -523,6 +527,45 @@ Matrix<rows, columns>::Normalize(Matrix<rows, columns> &result) const
   }
 
   return result;
+}
+
+template <uint8_t rows, uint8_t columns>
+template <uint8_t sub_rows, uint8_t sub_columns>
+Matrix<sub_rows, sub_columns> &Matrix<rows, columns>::SubMatrix(Matrix<sub_rows, sub_columns> &buffer, uint8_t row_offset, uint8_t column_offset) const
+{
+  for (uint8_t row_idx{0}; row_idx < sub_rows; row_idx++)
+  {
+    for (uint8_t column_idx{0}; column_idx < sub_columns; column_idx++)
+    {
+      buffer[row_idx][column_idx] =
+          this->Get(row_idx + row_offset, column_idx + column_offset);
+    }
+  }
+  return buffer;
+}
+
+template <uint8_t rows, uint8_t columns>
+template <uint8_t sub_rows, uint8_t sub_columns>
+void Matrix<rows, columns>::SetSubMatrix(const Matrix<sub_rows, sub_columns> &sub_matrix, uint8_t row_offset, uint8_t column_offset)
+{
+  uint8_t corrected_sub_rows = sub_rows;
+  uint8_t corrected_sub_columns = sub_columns;
+  if (sub_rows + row_offset > rows)
+  {
+    corrected_sub_rows = rows - row_offset;
+  }
+  if (sub_columns + column_offset > columns)
+  {
+    corrected_sub_columns = columns - column_offset;
+  }
+
+  for (uint8_t row_idx{0}; row_idx < corrected_sub_rows; row_idx++)
+  {
+    for (uint8_t column_idx{0}; column_idx < corrected_sub_columns; column_idx++)
+    {
+      this->matrix[(row_idx + row_offset) * columns + column_idx + column_offset] = sub_matrix.Get(row_idx, column_idx);
+    }
+  }
 }
 
 #endif // MATRIX_H_

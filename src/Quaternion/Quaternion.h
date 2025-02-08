@@ -28,6 +28,21 @@ public:
     float operator[](uint8_t index) const;
 
     /**
+     * @brief Assign one quaternion to another
+     */
+    void operator=(const Quaternion &other) const;
+
+    /**
+     * @brief Do quaternion multiplication
+     */
+    Quaternion operator*(const Quaternion &other) const;
+
+    /**
+     * @brief Multiply the quaternion by a scalar
+     */
+    Quaternion operator*(float scalar) const;
+
+    /**
      * @brief Add two quaternions together
      * @param other The quaternion to add to this one
      * @return The net quaternion
@@ -40,7 +55,7 @@ public:
      * @param buffer The buffer to store the result in
      * @return A reference to the buffer
      */
-    Quaternion &Q_Mult(Quaternion &other, Quaternion &buffer) const;
+    Quaternion &Q_Mult(const Quaternion &other, Quaternion &buffer) const;
 
     /**
      * @brief Rotate a quaternion by this quaternion
@@ -54,6 +69,8 @@ public:
      * @brief Normalize the quaternion to a magnitude of 1
      */
     void Normalize();
+
+    Matrix<3,3> ToRotationMatrix() const;
 
     // Give people an easy way to access the elements
     float &w{matrix[0]};
