@@ -2,6 +2,7 @@ cmake_minimum_required (VERSION 3.11)
 project(Vector3D)
 
 add_subdirectory(src)
+add_subdirectory(unit-tests)
 
 set(CMAKE_CXX_STANDARD 11)
 

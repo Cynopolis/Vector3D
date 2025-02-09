@@ -240,7 +240,7 @@ TEST_CASE("Elementary Matrix Operations", "Matrix")
 
   SECTION("Invert")
   {
-    mat1.Invert(mat3);
+    mat3 = mat1.Invert();
     REQUIRE_THAT(mat3.Get(0, 0), Catch::Matchers::WithinRel(-2.0F, 1e-6f));
     REQUIRE_THAT(mat3.Get(0, 1), Catch::Matchers::WithinRel(1.0F, 1e-6f));
     REQUIRE_THAT(mat3.Get(1, 0), Catch::Matchers::WithinRel(1.5F, 1e-6f));
@@ -250,7 +250,7 @@ TEST_CASE("Elementary Matrix Operations", "Matrix")
   SECTION("Transpose")
   {
     // transpose a square matrix
-    mat1.Transpose(mat3);
+    mat3 = mat1.Transpose();
 
     REQUIRE(mat3.Get(0, 0) == 1);
     REQUIRE(mat3.Get(0, 1) == 3);
@@ -261,7 +261,7 @@ TEST_CASE("Elementary Matrix Operations", "Matrix")
     Matrix<2, 3> mat4{1, 2, 3, 4, 5, 6};
     Matrix<3, 2> mat5{};
 
-    mat4.Transpose(mat5);
+    mat5 = mat4.Transpose();
 
     REQUIRE(mat5.Get(0, 0) == 1);
     REQUIRE(mat5.Get(0, 1) == 4);
@@ -314,6 +314,75 @@ TEST_CASE("Elementary Matrix Operations", "Matrix")
     mat1.GetColumn(1, mat1Columns);
     REQUIRE(mat1Columns.Get(0, 0) == 2);
     REQUIRE(mat1Columns.Get(1, 0) == 4);
+  }
+
+  SECTION("Get Sub-Matrices")
+  {
+    Matrix<3, 3> mat4{
+        1, 2, 3,
+        4, 5, 6,
+        7, 8, 9};
+
+    Matrix<2, 2> mat5{0};
+
+    mat4.SubMatrix(mat5, 0, 0);
+    REQUIRE(mat5.Get(0, 0) == 1);
+    REQUIRE(mat5.Get(0, 1) == 2);
+    REQUIRE(mat5.Get(1, 0) == 4);
+    REQUIRE(mat5.Get(1, 1) == 5);
+
+    mat4.SubMatrix(mat5, 1, 1);
+    REQUIRE(mat5.Get(0, 0) == 5);
+    REQUIRE(mat5.Get(0, 1) == 6);
+    REQUIRE(mat5.Get(1, 0) == 8);
+    REQUIRE(mat5.Get(1, 1) == 9);
+
+    Matrix<3, 1> mat6{0};
+    mat4.SubMatrix(mat6, 0, 0);
+    REQUIRE(mat6.Get(0, 0) == 1);
+    REQUIRE(mat6.Get(1, 0) == 4);
+    REQUIRE(mat6.Get(2, 0) == 7);
+
+    Matrix<1, 3> mat7{0};
+    mat4.SubMatrix(mat7, 0, 0);
+    REQUIRE(mat7.Get(0, 0) == 1);
+    REQUIRE(mat7.Get(0, 1) == 2);
+    REQUIRE(mat7.Get(0, 2) == 3);
+  }
+
+  SECTION("Set Sub-Matrices")
+  {
+    Matrix<3, 3> startMatrix{
+        1, 2, 3,
+        4, 5, 6,
+        7, 8, 9};
+    Matrix<3, 3> mat4 = startMatrix;
+
+    Matrix<2, 2> mat5{10, 11, 12, 13};
+    mat4.SetSubMatrix(mat5, 0, 0);
+    REQUIRE(mat4.Get(0, 0) == 10);
+    REQUIRE(mat4.Get(0, 1) == 11);
+    REQUIRE(mat4.Get(1, 0) == 12);
+    REQUIRE(mat4.Get(1, 1) == 13);
+
+    mat4 = startMatrix;
+    mat4.SetSubMatrix(mat5, 1, 1);
+    REQUIRE(mat4.Get(1, 1) == 10);
+    REQUIRE(mat4.Get(1, 2) == 11);
+    REQUIRE(mat4.Get(2, 1) == 12);
+    REQUIRE(mat4.Get(2, 2) == 13);
+
+    Matrix<3, 1> mat6{10, 11, 12};
+    mat4.SetSubMatrix(mat6, 0, 0);
+    REQUIRE(mat4.Get(0, 0) == 10);
+    REQUIRE(mat4.Get(1, 0) == 11);
+    REQUIRE(mat4.Get(2, 0) == 12);
+
+    Matrix<1, 3> mat7{10, 11, 12};
+    mat4.SetSubMatrix(mat7, 0, 0);
+    REQUIRE(mat4.Get(0, 0) == 10);
+    REQUIRE(mat4.Get(0, 1) == 11);
+    REQUIRE(mat4.Get(0, 2) == 12);
   }
 }
 
@@ -418,7 +487,7 @@ TEST_CASE("Timing Tests", "Matrix")
   {
     for (uint32_t i{0}; i < 100000; i++)
     {
-      mat4.Invert(mat5);
+      mat5 = mat4.Invert();
     }
   };
 
@@ -426,7 +495,7 @@ TEST_CASE("Timing Tests", "Matrix")
   {
     for (uint32_t i{0}; i < 10000; i++)
     {
-      mat1.Transpose(mat3);
+      mat3 = mat1.Transpose();
     }
   }
 
