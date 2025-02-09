@@ -2,7 +2,6 @@
 #define QUATERNION_H_
 
 #include "Matrix.hpp"
-
 class Quaternion : public Matrix<1, 4>
 {
 public:
@@ -70,7 +69,7 @@ public:
      */
     void Normalize();
 
-    Matrix<3,3> ToRotationMatrix() const;
+    Matrix<3, 3> ToRotationMatrix() const;
 
     // Give people an easy way to access the elements
     float &w{matrix[0]};

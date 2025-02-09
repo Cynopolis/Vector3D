@@ -49,7 +49,7 @@ Quaternion Quaternion::operator*(float scalar) const
 
 Quaternion Quaternion::operator+(const Quaternion &other) const
 {
-    return Quaternion{this->w * other.w, this->v1 * other.v1, this->v2 * other.v2, this->v3 * other.v3};
+    return Quaternion{this->w + other.w, this->v1 + other.v1, this->v2 + other.v2, this->v3 + other.v3};
 }
 
 Quaternion &
@@ -81,6 +81,10 @@ Quaternion &Quaternion::Rotate(Quaternion &other, Quaternion &buffer) const
 void Quaternion::Normalize()
 {
     float magnitude = sqrt(this->v1 * this->v1 + this->v2 * this->v2 + this->v3 * this->v3 + this->w * this->w);
+    if (magnitude == 0)
+    {
+        return;
+    }
     this->v1 /= magnitude;
     this->v2 /= magnitude;
     this->v3 /= magnitude;

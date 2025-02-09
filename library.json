@@ -16,17 +16,5 @@
     ],
     "license": "None Yet",
     "frameworks": "*",
-    "platforms": "*",
-    "build": {
-        "srcDir": "src",
-        "flags": [
-            "-std=c++17",
-            "-I src/Vector3D",
-            "-I src/Matrix",
-            "-I src/Quaternion"
-        ],
-        "srcFilter": [
-            "-<*/unit-tests/>"
-        ]
-    }
+    "platforms": "*"
 }
