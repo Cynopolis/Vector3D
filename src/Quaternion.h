@@ -29,7 +29,7 @@ public:
     /**
      * @brief Assign one quaternion to another
      */
-    void operator=(const Quaternion &other) const;
+    void operator=(const Quaternion &other);
 
     /**
      * @brief Do quaternion multiplication

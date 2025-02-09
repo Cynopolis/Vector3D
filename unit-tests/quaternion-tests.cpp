@@ -53,6 +53,16 @@ TEST_CASE("Vector Math", "Vector")
         REQUIRE(q6.v3 == 4);
     }
 
+    SECTION("Equals")
+    {
+        Quaternion q3{0, 0, 0, 0};
+        q3 = q1;
+        REQUIRE(q3.w == 1);
+        REQUIRE(q3.v1 == 2);
+        REQUIRE(q3.v2 == 3);
+        REQUIRE(q3.v3 == 4);
+    }
+
     SECTION("Array access")
     {
         REQUIRE(q1[0] == 1);
@@ -64,10 +74,10 @@ TEST_CASE("Vector Math", "Vector")
     SECTION("Addition")
     {
         Quaternion q3 = q1 + q2;
-        REQUIRE(q3.w == 5);
-        REQUIRE(q3.v1 == 12);
-        REQUIRE(q3.v2 == 21);
-        REQUIRE(q3.v3 == 32);
+        REQUIRE(q3.w == 6);
+        REQUIRE(q3.v1 == 8);
+        REQUIRE(q3.v2 == 10);
+        REQUIRE(q3.v3 == 12);
     }
 
     SECTION("Multiplication")

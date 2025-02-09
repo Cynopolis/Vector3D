@@ -30,9 +30,9 @@ float Quaternion::operator[](uint8_t index) const
     return 1e+6;
 }
 
-void Quaternion::operator=(const Quaternion &other) const
+void Quaternion::operator=(const Quaternion &other)
 {
-    static_cast<Matrix<1, 4>>(this->matrix) = static_cast<Matrix<1, 4>>(other.matrix);
+    memcpy(&(this->matrix), &(other.matrix), 4 * sizeof(float));
 }
 
 Quaternion Quaternion::operator*(const Quaternion &other) const
