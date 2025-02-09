@@ -530,9 +530,17 @@ Matrix<rows, columns>::Normalize(Matrix<rows, columns> &result) const
 }
 
 template <uint8_t rows, uint8_t columns>
-template <uint8_t sub_rows, uint8_t sub_columns>
-Matrix<sub_rows, sub_columns> &Matrix<rows, columns>::SubMatrix(Matrix<sub_rows, sub_columns> &buffer, uint8_t row_offset, uint8_t column_offset) const
+template <uint8_t sub_rows, uint8_t sub_columns, uint8_t row_offset, uint8_t column_offset>
+Matrix<sub_rows, sub_columns> Matrix<rows, columns>::SubMatrix() const
 {
+  // static assert that sub_rows + row_offset <= rows
+  // static assert that sub_columns + column_offset <= columns
+  static_assert(sub_rows + row_offset <= rows,
+                "The submatrix you're trying to get is out of bounds (rows)");
+  static_assert(sub_columns + column_offset <= columns,
+                "The submatrix you're trying to get is out of bounds (columns)");
+
+  Matrix<sub_rows, sub_columns> buffer{};
   for (uint8_t row_idx{0}; row_idx < sub_rows; row_idx++)
   {
     for (uint8_t column_idx{0}; column_idx < sub_columns; column_idx++)

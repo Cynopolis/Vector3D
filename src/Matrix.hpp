@@ -193,8 +193,8 @@ public:
 
   Matrix<rows, columns> operator*(float scalar) const;
 
-  template <uint8_t sub_rows, uint8_t sub_columns>
-  Matrix<sub_rows, sub_columns> &SubMatrix(Matrix<sub_rows, sub_columns> &buffer, uint8_t row_offset, uint8_t column_offset) const;
+  template <uint8_t sub_rows, uint8_t sub_columns, uint8_t row_offset, uint8_t column_offset>
+  Matrix<sub_rows, sub_columns> SubMatrix() const;
 
   template <uint8_t sub_rows, uint8_t sub_columns>
   void SetSubMatrix(const Matrix<sub_rows, sub_columns> &sub_matrix, uint8_t row_offset, uint8_t column_offset);
