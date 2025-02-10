@@ -356,27 +356,27 @@ TEST_CASE("Elementary Matrix Operations", "Matrix")
     Matrix<3, 3> mat4 = startMatrix;
 
     Matrix<2, 2> mat5{10, 11, 12, 13};
-    mat4.SetSubMatrix(mat5, 0, 0);
+    mat4.SetSubMatrix<2, 2, 0, 0>(mat5);
     REQUIRE(mat4.Get(0, 0) == 10);
     REQUIRE(mat4.Get(0, 1) == 11);
     REQUIRE(mat4.Get(1, 0) == 12);
     REQUIRE(mat4.Get(1, 1) == 13);
 
     mat4 = startMatrix;
-    mat4.SetSubMatrix(mat5, 1, 1);
+    mat4.SetSubMatrix<2, 2, 1, 1>(mat5);
     REQUIRE(mat4.Get(1, 1) == 10);
     REQUIRE(mat4.Get(1, 2) == 11);
     REQUIRE(mat4.Get(2, 1) == 12);
     REQUIRE(mat4.Get(2, 2) == 13);
 
     Matrix<3, 1> mat6{10, 11, 12};
-    mat4.SetSubMatrix(mat6, 0, 0);
+    mat4.SetSubMatrix<3, 1, 0, 0>(mat6);
     REQUIRE(mat4.Get(0, 0) == 10);
     REQUIRE(mat4.Get(1, 0) == 11);
     REQUIRE(mat4.Get(2, 0) == 12);
 
     Matrix<1, 3> mat7{10, 11, 12};
-    mat4.SetSubMatrix(mat7, 0, 0);
+    mat4.SetSubMatrix<1, 3, 0, 0>(mat7);
     REQUIRE(mat4.Get(0, 0) == 10);
     REQUIRE(mat4.Get(0, 1) == 11);
     REQUIRE(mat4.Get(0, 2) == 12);
