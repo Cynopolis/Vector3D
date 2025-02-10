@@ -134,7 +134,7 @@ Matrix<rows, columns>::Mult(const Matrix<columns, other_columns> &other,
 
       // the result's index is equal to the dot product of these two vectors
       result[row_idx][column_idx] =
-          Matrix<rows, columns>::dotProduct(this_row, other_column.Transpose());
+          Matrix<rows, columns>::DotProduct(this_row, other_column.Transpose());
     }
   }
 
@@ -394,7 +394,7 @@ Matrix<rows, columns> Matrix<rows, columns>::operator*(float scalar) const
 
 template <uint8_t rows, uint8_t columns>
 template <uint8_t vector_size>
-float Matrix<rows, columns>::dotProduct(const Matrix<1, vector_size> &vec1,
+float Matrix<rows, columns>::DotProduct(const Matrix<1, vector_size> &vec1,
                                         const Matrix<1, vector_size> &vec2)
 {
   float sum{0};
@@ -408,7 +408,7 @@ float Matrix<rows, columns>::dotProduct(const Matrix<1, vector_size> &vec1,
 
 template <uint8_t rows, uint8_t columns>
 template <uint8_t vector_size>
-float Matrix<rows, columns>::dotProduct(const Matrix<vector_size, 1> &vec1,
+float Matrix<rows, columns>::DotProduct(const Matrix<vector_size, 1> &vec1,
                                         const Matrix<vector_size, 1> &vec2)
 {
   float sum{0};
@@ -553,23 +553,17 @@ Matrix<sub_rows, sub_columns> Matrix<rows, columns>::SubMatrix() const
 }
 
 template <uint8_t rows, uint8_t columns>
-template <uint8_t sub_rows, uint8_t sub_columns>
-void Matrix<rows, columns>::SetSubMatrix(const Matrix<sub_rows, sub_columns> &sub_matrix, uint8_t row_offset, uint8_t column_offset)
+template <uint8_t sub_rows, uint8_t sub_columns, uint8_t row_offset, uint8_t column_offset>
+void Matrix<rows, columns>::SetSubMatrix(const Matrix<sub_rows, sub_columns> &sub_matrix)
 {
-  uint8_t corrected_sub_rows = sub_rows;
-  uint8_t corrected_sub_columns = sub_columns;
-  if (sub_rows + row_offset > rows)
-  {
-    corrected_sub_rows = rows - row_offset;
-  }
-  if (sub_columns + column_offset > columns)
-  {
-    corrected_sub_columns = columns - column_offset;
-  }
+  static_assert(sub_rows + row_offset <= rows,
+                "The submatrix you're trying to set is out of bounds (rows)");
+  static_assert(sub_columns + column_offset <= columns,
+                "The submatrix you're trying to set is out of bounds (columns)");
 
-  for (uint8_t row_idx{0}; row_idx < corrected_sub_rows; row_idx++)
+  for (uint8_t row_idx{0}; row_idx < sub_rows; row_idx++)
   {
-    for (uint8_t column_idx{0}; column_idx < corrected_sub_columns; column_idx++)
+    for (uint8_t column_idx{0}; column_idx < sub_columns; column_idx++)
     {
       this->matrix[(row_idx + row_offset) * columns + column_idx + column_offset] = sub_matrix.Get(row_idx, column_idx);
     }

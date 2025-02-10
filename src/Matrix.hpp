@@ -196,27 +196,27 @@ public:
   template <uint8_t sub_rows, uint8_t sub_columns, uint8_t row_offset, uint8_t column_offset>
   Matrix<sub_rows, sub_columns> SubMatrix() const;
 
-  template <uint8_t sub_rows, uint8_t sub_columns>
-  void SetSubMatrix(const Matrix<sub_rows, sub_columns> &sub_matrix, uint8_t row_offset, uint8_t column_offset);
+  template <uint8_t sub_rows, uint8_t sub_columns, uint8_t row_offset, uint8_t column_offset>
+  void SetSubMatrix(const Matrix<sub_rows, sub_columns> &sub_matrix);
+
+  /**
+   * @brief take the dot product of the two vectors
+   */
+  template <uint8_t vector_size>
+  static float DotProduct(const Matrix<1, vector_size> &vec1,
+                          const Matrix<1, vector_size> &vec2);
+
+  template <uint8_t vector_size>
+  static float DotProduct(const Matrix<vector_size, 1> &vec1,
+                          const Matrix<vector_size, 1> &vec2);
+
+  static float DotProduct(const Matrix<1, 1> &vec1,
+                          const Matrix<1, 1> &vec2) { return vec1.Get(0, 0) * vec2.Get(0, 0); }
 
 protected:
   std::array<float, rows * columns> matrix;
 
 private:
-  /**
-   * @brief take the dot product of the two vectors
-   */
-  template <uint8_t vector_size>
-  static float dotProduct(const Matrix<1, vector_size> &vec1,
-                          const Matrix<1, vector_size> &vec2);
-
-  template <uint8_t vector_size>
-  static float dotProduct(const Matrix<vector_size, 1> &vec1,
-                          const Matrix<vector_size, 1> &vec2);
-
-  static float dotProduct(const Matrix<1, 1> &vec1,
-                          const Matrix<1, 1> &vec2) { return vec1.Get(0, 0) * vec2.Get(0, 0); }
-
   Matrix<rows, columns> &adjugate(Matrix<rows, columns> &result) const;
 
   void setMatrixToArray(const std::array<float, rows * columns> &array);
