@@ -102,3 +102,19 @@ Matrix<3, 3> Quaternion::ToRotationMatrix() const
         2 * (this->v1 * this->v3 - this->v2 * this->w), 2 * (this->v2 * this->v3 + this->v1 * this->w), 1 - 2 * (xx - yy)};
     return rotationMatrix;
 };
+
+Matrix<3, 1> Quaternion::ToEulerAngle() const
+{
+    float sqv1 = this->v1 * this->v1;
+    float sqv2 = this->v2 * this->v2;
+    float sqv3 = this->v3 * this->v3;
+    float sqw = this->w * this->w;
+
+    Matrix<3, 1> eulerAngle;
+    {
+        atan2(2.0 * (this->v1 * this->v2 + this->v3 * this->w), (sqv1 - sqv2 - sqv3 + sqw));
+        asin(-2.0 * (this->v1 * this->v3 - this->v2 * this->w) / (sqv1 + sqv2 + sqv3 + sqw));
+        atan2(2.0 * (this->v2 * this->v3 + this->v1 * this->w), (-sqv1 - sqv2 + sqv3 + sqw));
+    };
+    return eulerAngle;
+}

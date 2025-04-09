@@ -69,7 +69,17 @@ public:
      */
     void Normalize();
 
+    /**
+     * @brief Convert the quaternion to a rotation matrix
+     * @return The rotation matrix
+     */
     Matrix<3, 3> ToRotationMatrix() const;
+
+    /**
+     * @brief Convert the quaternion to an Euler angle representation
+     * @return The Euler angle representation of the quaternion
+     */
+    Matrix<3, 1> ToEulerAngle() const;
 
     // Give people an easy way to access the elements
     float &w{matrix[0]};
