@@ -16,6 +16,15 @@ target_link_libraries(matrix-tests
     Catch2::Catch2WithMain
 )
 
+# matrix timing tests
+add_executable(matrix-timing-tests matrix-timing-tests.cpp)
+ 
+target_link_libraries(matrix-timing-tests 
+    PRIVATE 
+    matrix
+    Catch2::Catch2WithMain
+)
+
 # Vector 3D Tests
 add_executable(vector-3d-tests vector-tests.cpp)
 
