@@ -1,0 +1,26 @@
+name: Merge-Checker
+
+on:
+  pull_request:
+    branches: ["**"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v3
+
+      - name: Install dependencies (CMake + Ninja + Compiler)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build build-essential
+
+      - name: Configure project with CMake
+        run: |
+          cmake -G Ninja -S . -B build/
+
+      - name: Build with Ninja
+        run: |
+          ninja -C build/

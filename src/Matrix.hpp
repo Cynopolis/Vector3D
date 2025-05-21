@@ -10,10 +10,10 @@
 // TODO: Add a function for SVD decomposition
 // TODO: Add a function for LQ decomposition
 
-template <uint8_t rows, uint8_t columns>
-class Matrix
-{
+template <uint8_t rows, uint8_t columns> class Matrix {
 public:
+  static_assert(rows > 0, "Template error: rows must be greater than 0.");
+  static_assert(columns > 0, "Template error: columns must be greater than 0.");
   /**
    * @brief create a matrix but leave all of its values unitialized
    */
@@ -37,8 +37,7 @@ public:
   /**
    * @brief Initialize a matrix directly with any number of arguments
    */
-  template <typename... Args>
-  Matrix(Args... args);
+  template <typename... Args> Matrix(Args... args);
 
   /**
    * @brief set the matrix diagonals to 1 and all other values to 0
@@ -189,14 +188,17 @@ public:
   Matrix<rows, columns> operator-(const Matrix<rows, columns> &other) const;
 
   template <uint8_t other_columns>
-  Matrix<rows, other_columns> operator*(const Matrix<columns, other_columns> &other) const;
+  Matrix<rows, other_columns>
+  operator*(const Matrix<columns, other_columns> &other) const;
 
   Matrix<rows, columns> operator*(float scalar) const;
 
-  template <uint8_t sub_rows, uint8_t sub_columns, uint8_t row_offset, uint8_t column_offset>
+  template <uint8_t sub_rows, uint8_t sub_columns, uint8_t row_offset,
+            uint8_t column_offset>
   Matrix<sub_rows, sub_columns> SubMatrix() const;
 
-  template <uint8_t sub_rows, uint8_t sub_columns, uint8_t row_offset, uint8_t column_offset>
+  template <uint8_t sub_rows, uint8_t sub_columns, uint8_t row_offset,
+            uint8_t column_offset>
   void SetSubMatrix(const Matrix<sub_rows, sub_columns> &sub_matrix);
 
   /**
@@ -210,8 +212,9 @@ public:
   static float DotProduct(const Matrix<vector_size, 1> &vec1,
                           const Matrix<vector_size, 1> &vec2);
 
-  static float DotProduct(const Matrix<1, 1> &vec1,
-                          const Matrix<1, 1> &vec2) { return vec1.Get(0, 0) * vec2.Get(0, 0); }
+  static float DotProduct(const Matrix<1, 1> &vec1, const Matrix<1, 1> &vec2) {
+    return vec1.Get(0, 0) * vec2.Get(0, 0);
+  }
 
 protected:
   std::array<float, rows * columns> matrix;

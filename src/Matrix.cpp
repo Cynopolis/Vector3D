@@ -212,8 +212,8 @@ Matrix<rows, columns>::Transpose() const
 
 // explicitly define the determinant for a 2x2 matrix because it is definitely
 // the fastest way to calculate a 2x2 matrix determinant
-template <>
-inline float Matrix<0, 0>::Det() const { return 1e+6; }
+// template <>
+// inline float Matrix<0, 0>::Det() const { return 1e+6; }
 template <>
 inline float Matrix<1, 1>::Det() const { return this->matrix[0]; }
 template <>

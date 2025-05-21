@@ -1,8 +1,5 @@
 {
     "C_Cpp.intelliSenseEngine": "default",
-    "clangd.arguments": [
-        "--include-directory=build/unit-tests"
-    ],
     "C_Cpp.default.intelliSenseMode": "linux-gcc-x64",
     "files.associations": {
         "*.h": "cpp",
@@ -76,6 +73,7 @@
         "csignal": "cpp",
         "span": "cpp"
     },
-    "clangd.enable": false,
-    "C_Cpp.dimInactiveRegions": false
+    "clangd.enable": true,
+    "C_Cpp.dimInactiveRegions": false,
+    "editor.defaultFormatter": "xaver.clang-format"
 }
