@@ -5,22 +5,98 @@ on:
     branches: ["**"]
 
 jobs:
-  build:
+  build_and_test:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout source code
         uses: actions/checkout@v3
+        with:
+          persist-credentials: true
+          fetch-depth: 0
 
-      - name: Install dependencies (CMake + Ninja + Compiler)
+      - name: Install dependencies (CMake + Ninja + build tools)
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake ninja-build build-essential
+          sudo apt-get install -y cmake ninja-build build-essential time git
 
       - name: Configure project with CMake
-        run: |
-          cmake -G Ninja -S . -B build/
+        run: cmake -G Ninja -S . -B build/
 
       - name: Build with Ninja
+        run: ninja -C build/
+
+      - name: Run all unit tests except matrix-timing-tests
         run: |
-          ninja -C build/
+          for test_exec in build/unit-tests/matrix-tests build/unit-tests/quaternion-tests build/unit-tests/vector-3d-tests; do
+            if [ -x "$test_exec" ]; then
+              echo "Running $test_exec"
+              "$test_exec"
+            else
+              echo "Warning: $test_exec not found or not executable"
+            fi
+          done
+      - name: Run matrix-timing-tests
+        run: |
+          mkdir -p unit-tests/timing-results
+          if [ -x build/unit-tests/matrix-timing-tests ]; then
+            echo "Running matrix-timing-tests with timing"
+            /usr/bin/time -v build/unit-tests/matrix-timing-tests -d yes &> unit-tests/timing-results/matrix-timing-tests.txt
+            cat unit-tests/timing-results/matrix-timing-tests.txt
+          else
+            echo "matrix-timing-tests executable not found or not executable"
+            exit 1
+          fi
+
+      - name: Compare timing results
+        id: check_diff
+        run: |
+          git show origin/${{ github.event.pull_request.head.ref }}:unit-tests/timing-results/matrix-timing-tests.txt > old.txt || echo "" > old.txt
+          cp unit-tests/timing-results/matrix-timing-tests.txt new.txt
+
+          echo "Comparing timing results for changes ≥ 0.1s (ignoring 'Timing Tests' lines)..."
+
+          changed=0
+
+          awk -v changed_ref=/tmp/timings_changed.flag '
+            BEGIN {
+              change_threshold = 0.1
+            }
+            FILENAME == "old.txt" && /^[0-9]+\.[0-9]+ s: / {
+              label = substr($0, index($0, ":") + 2)
+              if (label != "Timing Tests") {
+                label_times[label] = $1
+              }
+            }
+            FILENAME == "new.txt" && /^[0-9]+\.[0-9]+ s: / {
+              new_time = $1
+              label = substr($0, index($0, ":") + 2)
+              if (label == "Timing Tests") next
+
+              old_time = label_times[label]
+              delta = new_time - old_time
+              if (delta < 0) delta = -delta
+
+              if (old_time != "" && delta >= change_threshold) {
+                printf "⚠️  %.3f s → %.3f s: %s (Δ=%.3f s)\n", old_time, new_time, label, delta
+                system("touch " changed_ref)
+              } else if (old_time == "") {
+                printf "🆕 New timing entry: %.3f s: %s\n", new_time, label
+                system("touch " changed_ref)
+              }
+            }
+            END {
+              if (!system("test -f " changed_ref)) {
+                exit 0
+              } else {
+                print "✅ Timings haven’t changed significantly (Δ < 0.1s)."
+                exit 0
+              }
+            }
+          ' old.txt new.txt
+
+          if [ -f /tmp/timings_changed.flag ]; then
+            echo "timings_changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "timings_changed=false" >> $GITHUB_OUTPUT
+          fi
