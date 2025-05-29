@@ -1,32 +1,32 @@
-Randomness seeded to: 2680752211
-0.179 s: Addition
-0.179 s: Timing Tests
-0.172 s: Subtraction
-0.172 s: Timing Tests
-1.894 s: Multiplication
-1.894 s: Timing Tests
-0.128 s: Scalar Multiplication
-0.128 s: Timing Tests
-0.177 s: Element Multiply
+Randomness seeded to: 2444679151
+0.180 s: Addition
+0.180 s: Timing Tests
+0.177 s: Subtraction
 0.177 s: Timing Tests
-0.176 s: Element Divide
-0.176 s: Timing Tests
-0.150 s: Minor Matrix
-0.150 s: Timing Tests
-0.102 s: Determinant
-0.102 s: Timing Tests
-0.416 s: Matrix of Minors
-0.416 s: Timing Tests
-0.110 s: Invert
-0.110 s: Timing Tests
-0.124 s: Transpose
-0.124 s: Timing Tests
-0.189 s: Normalize
-0.189 s: Timing Tests
+1.868 s: Multiplication
+1.868 s: Timing Tests
+0.127 s: Scalar Multiplication
+0.127 s: Timing Tests
+0.173 s: Element Multiply
+0.173 s: Timing Tests
+0.178 s: Element Divide
+0.178 s: Timing Tests
+0.172 s: Minor Matrix
+0.172 s: Timing Tests
+0.103 s: Determinant
+0.103 s: Timing Tests
+0.411 s: Matrix of Minors
+0.411 s: Timing Tests
+0.109 s: Invert
+0.109 s: Timing Tests
+0.122 s: Transpose
+0.122 s: Timing Tests
+0.190 s: Normalize
+0.190 s: Timing Tests
 0.006 s: GET ROW
 0.006 s: Timing Tests
-0.234 s: GET COLUMN
-0.234 s: Timing Tests
+0.235 s: GET COLUMN
+0.235 s: Timing Tests
 ===============================================================================
 test cases: 1 | 1 passed
 assertions: - none -
@@ -34,18 +34,18 @@ assertions: - none -
 	Command being timed: "build/unit-tests/matrix-timing-tests -d yes"
 	User time (seconds): 4.05
 	System time (seconds): 0.00
-	Percent of CPU this job got: 99%
-	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:04.06
+	Percent of CPU this job got: 100%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:04.05
 	Average shared text size (kbytes): 0
 	Average unshared data size (kbytes): 0
 	Average stack size (kbytes): 0
 	Average total size (kbytes): 0
 	Maximum resident set size (kbytes): 3200
 	Average resident set size (kbytes): 0
-	Major (requiring I/O) page faults: 186
-	Minor (reclaiming a frame) page faults: 172
+	Major (requiring I/O) page faults: 184
+	Minor (reclaiming a frame) page faults: 171
 	Voluntary context switches: 1
-	Involuntary context switches: 40
+	Involuntary context switches: 26
 	Swaps: 0
 	File system inputs: 12
 	File system outputs: 1
