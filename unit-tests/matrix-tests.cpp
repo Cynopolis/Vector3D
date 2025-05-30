@@ -353,7 +353,9 @@ TEST_CASE("Elementary Matrix Operations", "Matrix") {
     REQUIRE(mat4.Get(0, 1) == 11);
     REQUIRE(mat4.Get(0, 2) == 12);
   }
+}
 
+TEST_CASE("Advanced Matrix Operations", "Matrix") {
   SECTION("2x2 QRDecomposition") {
     Matrix<2, 2> A{1.0f, 2.0f, 3.0f, 4.0f};
     Matrix<2, 2> Q{}, R{};
@@ -391,13 +393,6 @@ TEST_CASE("Elementary Matrix Operations", "Matrix") {
 
     Matrix<3, 3> Q{}, R{};
     A.QRDecomposition(Q, R);
-
-    std::string strBuf1 = "";
-    Q.ToString(strBuf1);
-    std::cout << "Matrix Q:\n" << strBuf1 << std::endl;
-    strBuf1 = "";
-    R.ToString(strBuf1);
-    std::cout << "Matrix R:\n" << strBuf1 << std::endl;
 
     // Check that Q * R ≈ A
     Matrix<3, 3> QR{};

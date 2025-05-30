@@ -216,8 +216,24 @@ public:
     return vec1.Get(0, 0) * vec2.Get(0, 0);
   }
 
+  /**
+   * @brief Performs QR decomposition on this matrix
+   * @param Q a buffer that will contain Q after the function completes
+   * @param R a buffer that will contain R after the function completes
+   */
   void QRDecomposition(Matrix<rows, rows> &Q, Matrix<rows, rows> &R) const;
 
+  /**
+   * @brief Uses QR decomposition to efficiently calculate the eigenvectors and
+   * values of this matrix
+   * @param eigenVectors a buffer that will contain the eigenvectors fo this
+   * matrix
+   * @param eigenValues a buffer that will contain the eigenValues fo this
+   * matrix
+   * @param maxIterations the number of iterations to perform before giving up
+   * on reaching the given tolerance
+   * @param tolerance the level of accuracy to obtain before stopping.
+   */
   void EigenQR(Matrix<rows, rows> &eigenVectors, Matrix<rows, 1> &eigenValues,
                uint16_t maxIterations = 1000, float tolerance = 1e-6f) const;
 
