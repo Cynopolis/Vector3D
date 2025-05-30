@@ -353,4 +353,79 @@ TEST_CASE("Elementary Matrix Operations", "Matrix") {
     REQUIRE(mat4.Get(0, 1) == 11);
     REQUIRE(mat4.Get(0, 2) == 12);
   }
+
+  SECTION("2x2 QRDecomposition") {
+    Matrix<2, 2> A{1.0f, 2.0f, 3.0f, 4.0f};
+    Matrix<2, 2> Q{}, R{};
+    A.QRDecomposition(Q, R);
+
+    // Check that Q * R ≈ A
+    Matrix<2, 2> QR{};
+    Q.Mult(R, QR);
+    for (int i = 0; i < 2; ++i) {
+      for (int j = 0; j < 2; ++j) {
+        REQUIRE_THAT(QR[i][j], Catch::Matchers::WithinRel(A[i][j], 1e-4f));
+      }
+    }
+
+    // Check that Q is orthonormal: Qᵀ * Q ≈ I
+    Matrix<2, 2> Qt = Q.Transpose();
+    Matrix<2, 2> QtQ{};
+    Qt.Mult(Q, QtQ);
+    for (int i = 0; i < 2; ++i) {
+      for (int j = 0; j < 2; ++j) {
+        if (i == j)
+          REQUIRE_THAT(QtQ[i][j], Catch::Matchers::WithinRel(1.0f, 1e-4f));
+        else
+          REQUIRE_THAT(QtQ[i][j], Catch::Matchers::WithinAbs(0.0f, 1e-4f));
+      }
+    }
+
+    // Optional: R should be upper triangular
+    REQUIRE(std::fabs(R[1][0]) < 1e-4f);
+  }
+
+  SECTION("3x3 QRDecomposition") {
+    // this symmetrix tridiagonal matrix is well behaved for testing
+    Matrix<3, 3> A{3.0f, -1.0f, 0.0f, -1.0f, 3.0f, -1.0f, 0.0f, -1.0f, 3.0f};
+
+    Matrix<3, 3> Q{}, R{};
+    A.QRDecomposition(Q, R);
+
+    std::string strBuf1 = "";
+    Q.ToString(strBuf1);
+    std::cout << "Matrix Q:\n" << strBuf1 << std::endl;
+    strBuf1 = "";
+    R.ToString(strBuf1);
+    std::cout << "Matrix R:\n" << strBuf1 << std::endl;
+
+    // Check that Q * R ≈ A
+    Matrix<3, 3> QR{};
+    Q.Mult(R, QR);
+    for (int i = 0; i < 3; ++i) {
+      for (int j = 0; j < 3; ++j) {
+        REQUIRE_THAT(QR[i][j], Catch::Matchers::WithinRel(A[i][j], 1e-4f));
+      }
+    }
+
+    // Check that Qᵀ * Q ≈ I
+    Matrix<3, 3> Qt = Q.Transpose();
+    Matrix<3, 3> QtQ{};
+    Qt.Mult(Q, QtQ);
+    for (int i = 0; i < 3; ++i) {
+      for (int j = 0; j < 3; ++j) {
+        if (i == j)
+          REQUIRE_THAT(QtQ[i][j], Catch::Matchers::WithinRel(1.0f, 1e-4f));
+        else
+          REQUIRE_THAT(QtQ[i][j], Catch::Matchers::WithinAbs(0.0f, 1e-4f));
+      }
+    }
+
+    // Optional: Check R is upper triangular
+    for (int i = 1; i < 3; ++i) {
+      for (int j = 0; j < i; ++j) {
+        REQUIRE(std::fabs(R[i][j]) < 1e-4f);
+      }
+    }
+  }
 }

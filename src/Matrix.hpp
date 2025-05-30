@@ -216,6 +216,11 @@ public:
     return vec1.Get(0, 0) * vec2.Get(0, 0);
   }
 
+  void QRDecomposition(Matrix<rows, rows> &Q, Matrix<rows, rows> &R) const;
+
+  void EigenQR(Matrix<rows, rows> &eigenVectors, Matrix<rows, 1> &eigenValues,
+               uint16_t maxIterations = 1000, float tolerance = 1e-6f) const;
+
 protected:
   std::array<float, rows * columns> matrix;
 

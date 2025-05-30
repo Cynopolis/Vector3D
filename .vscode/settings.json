@@ -75,5 +75,6 @@
     },
     "clangd.enable": true,
     "C_Cpp.dimInactiveRegions": false,
-    "editor.defaultFormatter": "xaver.clang-format"
+    "editor.defaultFormatter": "xaver.clang-format",
+    "clangd.inactiveRegions.useBackgroundHighlight": true
 }
