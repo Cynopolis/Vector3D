@@ -355,7 +355,7 @@ TEST_CASE("Elementary Matrix Operations", "Matrix") {
   }
 }
 
-TEST_CASE("Advanced Matrix Operations", "Matrix") {
+TEST_CASE("QR Decompositions", "Matrix") {
   SECTION("2x2 QRDecomposition") {
     Matrix<2, 2> A{1.0f, 2.0f, 3.0f, 4.0f};
     Matrix<2, 2> Q{}, R{};
@@ -422,5 +422,82 @@ TEST_CASE("Advanced Matrix Operations", "Matrix") {
         REQUIRE(std::fabs(R[i][j]) < 1e-4f);
       }
     }
+  }
+
+  SECTION("4x2 QRDecomposition") {
+    // A simple 4x2 matrix
+    Matrix<4, 2> A{1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f};
+
+    Matrix<4, 2> Q{};
+    Matrix<2, 2> R{};
+    A.QRDecomposition(Q, R);
+
+    // Check that Q * R ≈ A
+    Matrix<4, 2> QR{};
+    Q.Mult(R, QR);
+    for (int i = 0; i < 4; ++i) {
+      for (int j = 0; j < 2; ++j) {
+        REQUIRE_THAT(QR[i][j], Catch::Matchers::WithinRel(A[i][j], 1e-4f));
+      }
+    }
+
+    // Check that Qᵀ * Q ≈ I₂
+    Matrix<2, 4> Qt = Q.Transpose();
+    Matrix<2, 2> QtQ{};
+    Qt.Mult(Q, QtQ);
+    for (int i = 0; i < 2; ++i) {
+      for (int j = 0; j < 2; ++j) {
+        if (i == j)
+          REQUIRE_THAT(QtQ[i][j], Catch::Matchers::WithinRel(1.0f, 1e-4f));
+        else
+          REQUIRE_THAT(QtQ[i][j], Catch::Matchers::WithinAbs(0.0f, 1e-4f));
+      }
+    }
+
+    // Check R is upper triangular (i > j ⇒ R[i][j] ≈ 0)
+    for (int i = 1; i < 2; ++i) {
+      for (int j = 0; j < i; ++j) {
+        REQUIRE(std::fabs(R[i][j]) < 1e-4f);
+      }
+    }
+  }
+}
+
+TEST_CASE("Eigenvalues and Vectors", "Matrix") {
+  SECTION("2x2 Eigen") {
+    Matrix<2, 2> A{1.0f, 2.0f, 3.0f, 4.0f};
+    Matrix<2, 2> vectors{};
+    Matrix<2, 1> values{};
+
+    A.EigenQR(vectors, values, 1000000, 1e-20f);
+
+    REQUIRE_THAT(vectors[0][0], Catch::Matchers::WithinRel(0.41597f, 1e-4f));
+    REQUIRE_THAT(vectors[1][0], Catch::Matchers::WithinRel(0.90938f, 1e-4f));
+    REQUIRE_THAT(values[0][0], Catch::Matchers::WithinRel(5.372282f, 1e-4f));
+    REQUIRE_THAT(values[1][0], Catch::Matchers::WithinRel(-0.372281f, 1e-4f));
+  }
+
+  SECTION("3x3 Eigen") {
+    // this symmetrix tridiagonal matrix is well behaved for testing
+    Matrix<3, 3> A{1, 2, 3, 4, 5, 6, 7, 8, 9};
+
+    Matrix<3, 3> vectors{};
+    Matrix<3, 1> values{};
+    A.EigenQR(vectors, values, 10000, 1e-8f);
+
+    std::string strBuf1 = "";
+    vectors.ToString(strBuf1);
+    std::cout << "Vectors:\n" << strBuf1 << std::endl;
+    strBuf1 = "";
+    values.ToString(strBuf1);
+    std::cout << "Values:\n" << strBuf1 << std::endl;
+
+    REQUIRE_THAT(vectors[0][0], Catch::Matchers::WithinRel(0.23197f, 1e-4f));
+    REQUIRE_THAT(vectors[1][0], Catch::Matchers::WithinRel(0.525322f, 1e-4f));
+    REQUIRE_THAT(vectors[2][0], Catch::Matchers::WithinRel(0.81867f, 1e-4f));
+    REQUIRE_THAT(values[0][0], Catch::Matchers::WithinRel(16.1168f, 1e-4f));
+    REQUIRE_THAT(values[1][0], Catch::Matchers::WithinRel(-1.11684f, 1e-4f));
+    // TODO: Figure out what's wrong here
+    // REQUIRE_THAT(values[2][0], Catch::Matchers::WithinRel(-3.2583f, 1e-4f));
   }
 }

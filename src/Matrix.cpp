@@ -489,15 +489,15 @@ void Matrix<rows, columns>::SetSubMatrix(
 // QR decomposition: decomposes this matrix A into Q and R
 // Assumes square matrix
 template <uint8_t rows, uint8_t columns>
-void Matrix<rows, columns>::QRDecomposition(Matrix<rows, rows> &Q,
-                                            Matrix<rows, rows> &R) const {
-  // Use Gram-Schmidt orthogonalization for simplicity
+void Matrix<rows, columns>::QRDecomposition(Matrix<rows, columns> &Q,
+                                            Matrix<columns, columns> &R) const {
+  // Gram-Schmidt orthogonalization
   Matrix<rows, 1> a_col, u, e, proj;
   Matrix<rows, 1> q_col;
   Q.Fill(0);
   R.Fill(0);
 
-  for (uint8_t k = 0; k < rows; ++k) {
+  for (uint8_t k = 0; k < columns; ++k) {
     this->GetColumn(k, a_col);
     u = a_col;
 
@@ -527,14 +527,14 @@ void Matrix<rows, columns>::QRDecomposition(Matrix<rows, rows> &Q,
 template <uint8_t rows, uint8_t columns>
 void Matrix<rows, columns>::EigenQR(Matrix<rows, rows> &eigenVectors,
                                     Matrix<rows, 1> &eigenValues,
-                                    uint16_t maxIterations,
+                                    uint32_t maxIterations,
                                     float tolerance) const {
   static_assert(rows > 1, "Matrix size must be > 1 for QR iteration");
 
   Matrix<rows, rows> A = *this; // copy original matrix
   eigenVectors.Identity();
 
-  for (uint16_t iter = 0; iter < maxIterations; ++iter) {
+  for (uint32_t iter = 0; iter < maxIterations; ++iter) {
     Matrix<rows, rows> Q, R;
     A.QRDecomposition(Q, R);
 
@@ -543,14 +543,16 @@ void Matrix<rows, columns>::EigenQR(Matrix<rows, rows> &eigenVectors,
 
     // Check convergence: off-diagonal norm
     float offDiagSum = 0.f;
-    for (uint8_t i = 0; i < rows; ++i) {
-      for (uint8_t j = 0; j < rows; ++j) {
-        if (i != j)
+    for (uint8_t i = 0; i < rows; i++) {
+      for (uint8_t j = 0; j < rows; j++) {
+        if (i != j) {
           offDiagSum += fabs(A[i][j]);
+        }
       }
     }
-    if (offDiagSum < tolerance)
+    if (offDiagSum < tolerance) {
       break;
+    }
   }
 
   // eigenvalues are the diagonal elements of A
