@@ -278,6 +278,11 @@ void Matrix<rows, columns>::ToString(std::string &stringBuffer) const {
 }
 
 template <uint8_t rows, uint8_t columns>
+const float *Matrix<rows, columns>::ToArray() const {
+  return this->matrix.data();
+}
+
+template <uint8_t rows, uint8_t columns>
 std::array<float, columns> &
 Matrix<rows, columns>::operator[](uint8_t row_index) {
   if (row_index > rows - 1) {
@@ -418,8 +423,8 @@ Matrix<rows, columns>::adjugate(Matrix<rows, columns> &result) const {
 }
 
 template <uint8_t rows, uint8_t columns>
-Matrix<rows, columns> &
-Matrix<rows, columns>::Normalize(Matrix<rows, columns> &result) const {
+Matrix<rows, columns> Matrix<rows, columns>::EuclideanNorm() const {
+
   float sum{0};
   for (uint8_t row_idx{0}; row_idx < rows; row_idx++) {
     for (uint8_t column_idx{0}; column_idx < columns; column_idx++) {
@@ -428,14 +433,14 @@ Matrix<rows, columns>::Normalize(Matrix<rows, columns> &result) const {
     }
   }
 
+  Matrix<rows, columns> result{};
   if (sum == 0) {
     // this wouldn't do anything anyways
-    result.Fill(1e+6);
+    result.Fill(0);
     return result;
   }
 
   sum = sqrt(sum);
-
   for (uint8_t row_idx{0}; row_idx < rows; row_idx++) {
     for (uint8_t column_idx{0}; column_idx < columns; column_idx++) {
       result[row_idx][column_idx] = this->Get(row_idx, column_idx) / sum;
@@ -491,11 +496,9 @@ void Matrix<rows, columns>::SetSubMatrix(
 template <uint8_t rows, uint8_t columns>
 void Matrix<rows, columns>::QRDecomposition(Matrix<rows, columns> &Q,
                                             Matrix<columns, columns> &R) const {
-
   static_assert(columns <= rows, "QR decomposition requires columns <= rows");
-  // Gram-Schmidt orthogonalization
-  Matrix<rows, 1> a_col, u, e, proj;
-  Matrix<rows, 1> q_col;
+
+  Matrix<rows, 1> a_col, u, q_col, proj;
   Q.Fill(0);
   R.Fill(0);
 
@@ -505,18 +508,17 @@ void Matrix<rows, columns>::QRDecomposition(Matrix<rows, columns> &Q,
 
     for (uint8_t j = 0; j < k; ++j) {
       Q.GetColumn(j, q_col);
-      float r_jk = Matrix<rows, 1>::DotProduct(q_col, a_col);
+      float r_jk = Matrix<rows, 1>::DotProduct(
+          q_col, u); // FIXED: use u instead of a_col
       R[j][k] = r_jk;
 
-      // proj = r_jk * q_j
       proj = q_col * r_jk;
       u = u - proj;
     }
 
     float norm = sqrt(Matrix<rows, 1>::DotProduct(u, u));
-    if (norm == 0) {
-      norm = 1e-12f; // avoid div by zero
-    }
+    if (norm < 1e-12f)
+      norm = 1e-12f; // for stability
 
     for (uint8_t i = 0; i < rows; ++i) {
       Q[i][k] = u[i][0] / norm;

@@ -132,7 +132,7 @@ public:
    * @brief reduce the matrix so the sum of its elements equal 1
    * @param result a buffer to store the result into
    */
-  Matrix<rows, columns> &Normalize(Matrix<rows, columns> &result) const;
+  Matrix<rows, columns> EuclideanNorm() const;
 
   /**
    * @brief Get a row from the matrix
@@ -159,7 +159,15 @@ public:
    */
   constexpr uint8_t GetColumnSize() { return columns; }
 
+  /**
+   * @brief Write a string representation of the matrix into the buffer
+   */
   void ToString(std::string &stringBuffer) const;
+
+  /**
+   * @brief Returns the internal representation of the matrix as an array
+   */
+  const float *ToArray() const;
 
   /**
    * @brief Get an element from the matrix

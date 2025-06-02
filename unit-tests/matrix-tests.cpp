@@ -282,26 +282,6 @@ TEST_CASE("Elementary Matrix Operations", "Matrix") {
     REQUIRE(mat5.Get(2, 1) == 6);
   }
 
-  SECTION("Normalize") {
-    mat1.Normalize(mat3);
-
-    float sqrt_30{static_cast<float>(sqrt(30.0f))};
-
-    REQUIRE(mat3.Get(0, 0) == 1 / sqrt_30);
-    REQUIRE(mat3.Get(0, 1) == 2 / sqrt_30);
-    REQUIRE(mat3.Get(1, 0) == 3 / sqrt_30);
-    REQUIRE(mat3.Get(1, 1) == 4 / sqrt_30);
-
-    Matrix<2, 1> mat4{-0.878877044, 2.92092276};
-    Matrix<2, 1> mat5{};
-    mat4.Normalize(mat5);
-
-    REQUIRE_THAT(mat5.Get(0, 0),
-                 Catch::Matchers::WithinRel(-0.288129855179f, 1e-6f));
-    REQUIRE_THAT(mat5.Get(1, 0),
-                 Catch::Matchers::WithinRel(0.957591346325f, 1e-6f));
-  }
-
   SECTION("GET ROW") {
     Matrix<1, 2> mat1Rows{};
     mat1.GetRow(0, mat1Rows);
@@ -383,6 +363,63 @@ TEST_CASE("Elementary Matrix Operations", "Matrix") {
   }
 }
 
+template <uint8_t rows, uint8_t columns>
+float matrixSum(const Matrix<rows, columns> &matrix) {
+  float sum = 0;
+  for (uint32_t i = 0; i < rows * columns; i++) {
+    float number = matrix.ToArray()[i];
+    sum += number * number;
+  }
+  return std::sqrt(sum);
+}
+
+TEST_CASE("Normalization", "Matrix") {
+
+  SECTION("2x2 Normalize") {
+    Matrix<2, 2> mat1{1, 2, 3, 4};
+    Matrix<2, 2> mat2{};
+
+    mat2 = mat1.EuclideanNorm();
+
+    float sqrt_30{static_cast<float>(sqrt(30.0f))};
+
+    REQUIRE(mat2.Get(0, 0) == 1 / sqrt_30);
+    REQUIRE(mat2.Get(0, 1) == 2 / sqrt_30);
+    REQUIRE(mat2.Get(1, 0) == 3 / sqrt_30);
+    REQUIRE(mat2.Get(1, 1) == 4 / sqrt_30);
+
+    REQUIRE_THAT(matrixSum(mat2), Catch::Matchers::WithinRel(1.0f, 1e-6f));
+  }
+
+  SECTION("2x1 (Vector) Normalize") {
+    Matrix<2, 1> mat1{-0.878877044, 2.92092276};
+    Matrix<2, 1> mat2{};
+    mat2 = mat1.EuclideanNorm();
+
+    REQUIRE_THAT(mat2.Get(0, 0),
+                 Catch::Matchers::WithinRel(-0.288129855179f, 1e-6f));
+    REQUIRE_THAT(mat2.Get(1, 0),
+                 Catch::Matchers::WithinRel(0.957591346325f, 1e-6f));
+
+    float sum = matrixSum(mat2);
+    REQUIRE_THAT(sum, Catch::Matchers::WithinRel(1.0f, 1e-6f));
+  }
+
+  SECTION("Normalized vectors sum to 1") {
+    Matrix<9, 1> mat1{1, 2, 3, 4, 5, 6, 7, 8, 9};
+    Matrix<9, 1> mat2;
+    mat2 = mat1.EuclideanNorm();
+    float sum = matrixSum(mat2);
+    REQUIRE_THAT(sum, Catch::Matchers::WithinRel(1.0f, 1e-6f));
+
+    Matrix<2, 3> mat3{1, 2, 3, 4, 5, 6};
+    Matrix<2, 3> mat4{};
+    mat4 = mat3.EuclideanNorm();
+    sum = matrixSum(mat4);
+    REQUIRE_THAT(sum, Catch::Matchers::WithinRel(1.0f, 1e-6f));
+  }
+}
+
 TEST_CASE("QR Decompositions", "Matrix") {
   SECTION("2x2 QRDecomposition") {
     Matrix<2, 2> A{1.0f, 2.0f, 3.0f, 4.0f};
@@ -434,6 +471,13 @@ TEST_CASE("QR Decompositions", "Matrix") {
     Matrix<3, 3> Q{}, R{};
     A.QRDecomposition(Q, R);
 
+    std::string strBuf1 = "";
+    Q.ToString(strBuf1);
+    std::cout << "Q:\n" << strBuf1 << std::endl;
+    strBuf1 = "";
+    R.ToString(strBuf1);
+    std::cout << "R:\n" << strBuf1 << std::endl;
+
     // Check that Q * R ≈ A
     Matrix<3, 3> QR{};
     QR = Q * R;
@@ -462,13 +506,6 @@ TEST_CASE("QR Decompositions", "Matrix") {
         REQUIRE(std::fabs(R[i][j]) < 1e-4f);
       }
     }
-
-    std::string strBuf1 = "";
-    Q.ToString(strBuf1);
-    std::cout << "Q:\n" << strBuf1 << std::endl;
-    strBuf1 = "";
-    R.ToString(strBuf1);
-    std::cout << "R:\n" << strBuf1 << std::endl;
 
     // check that all Q values are correct
     REQUIRE_THAT(Q[0][0], Catch::Matchers::WithinRel(0.1231f, 1e-4f));
