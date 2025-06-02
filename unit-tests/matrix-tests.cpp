@@ -373,13 +373,15 @@ float matrixSum(const Matrix<rows, columns> &matrix) {
   return std::sqrt(sum);
 }
 
+// TODO: Add test for scalar division
+
 TEST_CASE("Normalization", "Matrix") {
 
   SECTION("2x2 Normalize") {
     Matrix<2, 2> mat1{1, 2, 3, 4};
     Matrix<2, 2> mat2{};
 
-    mat2 = mat1.EuclideanNorm();
+    mat2 = mat1 / mat1.EuclideanNorm();
 
     float sqrt_30{static_cast<float>(sqrt(30.0f))};
 
@@ -394,7 +396,7 @@ TEST_CASE("Normalization", "Matrix") {
   SECTION("2x1 (Vector) Normalize") {
     Matrix<2, 1> mat1{-0.878877044, 2.92092276};
     Matrix<2, 1> mat2{};
-    mat2 = mat1.EuclideanNorm();
+    mat2 = mat1 / mat1.EuclideanNorm();
 
     REQUIRE_THAT(mat2.Get(0, 0),
                  Catch::Matchers::WithinRel(-0.288129855179f, 1e-6f));
@@ -408,13 +410,13 @@ TEST_CASE("Normalization", "Matrix") {
   SECTION("Normalized vectors sum to 1") {
     Matrix<9, 1> mat1{1, 2, 3, 4, 5, 6, 7, 8, 9};
     Matrix<9, 1> mat2;
-    mat2 = mat1.EuclideanNorm();
+    mat2 = mat1 / mat1.EuclideanNorm();
     float sum = matrixSum(mat2);
     REQUIRE_THAT(sum, Catch::Matchers::WithinRel(1.0f, 1e-6f));
 
     Matrix<2, 3> mat3{1, 2, 3, 4, 5, 6};
     Matrix<2, 3> mat4{};
-    mat4 = mat3.EuclideanNorm();
+    mat4 = mat3 / mat3.EuclideanNorm();
     sum = matrixSum(mat4);
     REQUIRE_THAT(sum, Catch::Matchers::WithinRel(1.0f, 1e-6f));
   }

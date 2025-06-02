@@ -9,8 +9,7 @@
 Quaternion Quaternion::FromAngleAndAxis(float angle, const Matrix<1, 3> &axis) {
   const float halfAngle = angle / 2;
   const float sinHalfAngle = sin(halfAngle);
-  Matrix<1, 3> normalizedAxis{};
-  normalizedAxis = axis.EuclideanNorm();
+  Matrix<1, 3> normalizedAxis = axis / axis.EuclideanNorm();
   return Quaternion{static_cast<float>(cos(halfAngle)),
                     normalizedAxis.Get(0, 0) * sinHalfAngle,
                     normalizedAxis.Get(0, 1) * sinHalfAngle,

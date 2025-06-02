@@ -338,6 +338,22 @@ Matrix<rows, columns> Matrix<rows, columns>::operator*(float scalar) const {
 }
 
 template <uint8_t rows, uint8_t columns>
+Matrix<rows, columns> Matrix<rows, columns>::operator/(float scalar) const {
+  Matrix<rows, columns> buffer = *this;
+  if (scalar == 0) {
+    buffer.Fill(1e+10);
+    return buffer;
+  }
+
+  for (uint8_t row = 0; row < rows; row++) {
+    for (uint8_t column = 0; column < columns; column++) {
+      buffer[row][column] /= scalar;
+    }
+  }
+  return buffer;
+}
+
+template <uint8_t rows, uint8_t columns>
 template <uint8_t vector_size>
 float Matrix<rows, columns>::DotProduct(const Matrix<1, vector_size> &vec1,
                                         const Matrix<1, vector_size> &vec2) {
@@ -423,7 +439,7 @@ Matrix<rows, columns>::adjugate(Matrix<rows, columns> &result) const {
 }
 
 template <uint8_t rows, uint8_t columns>
-Matrix<rows, columns> Matrix<rows, columns>::EuclideanNorm() const {
+float Matrix<rows, columns>::EuclideanNorm() const {
 
   float sum{0};
   for (uint8_t row_idx{0}; row_idx < rows; row_idx++) {
@@ -433,21 +449,17 @@ Matrix<rows, columns> Matrix<rows, columns>::EuclideanNorm() const {
     }
   }
 
-  Matrix<rows, columns> result{};
-  if (sum == 0) {
-    // this wouldn't do anything anyways
-    result.Fill(0);
-    return result;
+  return sqrt(sum);
+}
+template <uint8_t rows, uint8_t columns>
+float Matrix<rows, columns>::L2Norm() const {
+  float sum{0};
+  Matrix<rows, 1> columnMatrix{};
+  for (uint8_t column = 0; column < columns; column++) {
+    this.GetColumn(column, columnMatrix);
+    sum += columnMatrix.EuclideanNorm();
   }
-
-  sum = sqrt(sum);
-  for (uint8_t row_idx{0}; row_idx < rows; row_idx++) {
-    for (uint8_t column_idx{0}; column_idx < columns; column_idx++) {
-      result[row_idx][column_idx] = this->Get(row_idx, column_idx) / sum;
-    }
-  }
-
-  return result;
+  return sqrt(sum);
 }
 
 template <uint8_t rows, uint8_t columns>

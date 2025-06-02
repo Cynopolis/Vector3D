@@ -132,7 +132,9 @@ public:
    * @brief reduce the matrix so the sum of its elements equal 1
    * @param result a buffer to store the result into
    */
-  Matrix<rows, columns> EuclideanNorm() const;
+  float EuclideanNorm() const;
+
+  float L2Norm() const;
 
   /**
    * @brief Get a row from the matrix
@@ -200,6 +202,8 @@ public:
   operator*(const Matrix<columns, other_columns> &other) const;
 
   Matrix<rows, columns> operator*(float scalar) const;
+
+  Matrix<rows, columns> operator/(float scalar) const;
 
   template <uint8_t sub_rows, uint8_t sub_columns, uint8_t row_offset,
             uint8_t column_offset>
