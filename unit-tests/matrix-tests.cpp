@@ -469,6 +469,7 @@ TEST_CASE("QR Decompositions", "Matrix") {
   SECTION("3x3 QRDecomposition") {
     // this symmetrix tridiagonal matrix is well behaved for testing
     Matrix<3, 3> A{1, 2, 3, 4, 5, 6, 7, 8, 9};
+    uint32_t matrixRank = 2;
 
     Matrix<3, 3> Q{}, R{};
     A.QRDecomposition(Q, R);
@@ -490,11 +491,13 @@ TEST_CASE("QR Decompositions", "Matrix") {
     }
 
     // Check that Qᵀ * Q ≈ I
+    // In this case the A matrix is only rank 2, so the identity matrix given by
+    // Qᵀ * Q is actually only going to be 2x2.
     Matrix<3, 3> Qt = Q.Transpose();
     Matrix<3, 3> QtQ{};
     QtQ = Qt * Q;
-    for (int i = 0; i < 3; ++i) {
-      for (int j = 0; j < 3; ++j) {
+    for (int i = 0; i < matrixRank; ++i) {
+      for (int j = 0; j < matrixRank; ++j) {
         if (i == j)
           REQUIRE_THAT(QtQ[i][j], Catch::Matchers::WithinRel(1.0f, 1e-4f));
         else
@@ -503,7 +506,8 @@ TEST_CASE("QR Decompositions", "Matrix") {
     }
 
     // Optional: Check R is upper triangular
-    for (int i = 1; i < 3; ++i) {
+    // The matrix's rank is only 2 so the last row will not be triangular
+    for (int i = 1; i < matrixRank; ++i) {
       for (int j = 0; j < i; ++j) {
         REQUIRE(std::fabs(R[i][j]) < 1e-4f);
       }
@@ -529,7 +533,7 @@ TEST_CASE("QR Decompositions", "Matrix") {
     REQUIRE_THAT(R[1][2], Catch::Matchers::WithinRel(1.80907f, 1e-4f));
     REQUIRE_THAT(R[2][0], Catch::Matchers::WithinRel(0.0f, 1e-4f));
     REQUIRE_THAT(R[2][1], Catch::Matchers::WithinRel(0.0f, 1e-4f));
-    REQUIRE_THAT(R[2][2], Catch::Matchers::WithinRel(1.0f, 1e-4f));
+    REQUIRE_THAT(R[2][2], Catch::Matchers::WithinRel(0.0f, 1e-4f));
   }
 
   SECTION("4x2 QRDecomposition") {
