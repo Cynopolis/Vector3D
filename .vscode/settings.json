@@ -76,7 +76,7 @@
     "clangd.enable": true,
     "C_Cpp.dimInactiveRegions": false,
     "editor.defaultFormatter": "xaver.clang-format",
-    "clangd.inactiveRegions.useBackgroundHighlight": true,
+    "clangd.inactiveRegions.useBackgroundHighlight": false,
     "clangd.arguments": [
         "--compile-commands-dir=${workspaceFolder}/build"
     ],

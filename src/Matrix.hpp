@@ -1,5 +1,4 @@
-#ifndef MATRIX_H_
-#define MATRIX_H_
+#pragma once
 
 #include <array>
 #include <cstdint>
@@ -258,6 +257,6 @@ private:
   void setMatrixToArray(const std::array<float, rows * columns> &array);
 };
 
+#ifndef MATRIX_H_
 #include "Matrix.cpp"
-
 #endif // MATRIX_H_

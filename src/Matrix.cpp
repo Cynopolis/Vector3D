@@ -1,3 +1,10 @@
+// This #ifndef section makes clangd happy so that it can properly do type hints
+// in this file
+#ifndef MATRIX_H_
+#define MATRIX_H_
+#include "Matrix.hpp"
+#endif
+
 #ifdef MATRIX_H_ // since the .cpp file has to be included by the .hpp file this
                  // will evaluate to true
 #include "Matrix.hpp"
