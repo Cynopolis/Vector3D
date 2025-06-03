@@ -129,12 +129,11 @@ public:
   Matrix<columns, rows> Transpose() const;
 
   /**
-   * @brief reduce the matrix so the sum of its elements equal 1
+   * @brief Returns the euclidean magnitude of the matrix. Also known as the L2
+   * norm
    * @param result a buffer to store the result into
    */
   float EuclideanNorm() const;
-
-  float L2Norm() const;
 
   /**
    * @brief Get a row from the matrix
@@ -209,9 +208,9 @@ public:
             uint8_t column_offset>
   Matrix<sub_rows, sub_columns> SubMatrix() const;
 
-  template <uint8_t sub_rows, uint8_t sub_columns, uint8_t row_offset,
-            uint8_t column_offset>
-  void SetSubMatrix(const Matrix<sub_rows, sub_columns> &sub_matrix);
+  template <uint8_t sub_rows, uint8_t sub_columns>
+  void SetSubMatrix(uint8_t rowOffset, uint8_t columnOffset,
+                    const Matrix<sub_rows, sub_columns> &sub_matrix);
 
   /**
    * @brief take the dot product of the two vectors

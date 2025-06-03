@@ -451,16 +451,6 @@ float Matrix<rows, columns>::EuclideanNorm() const {
 
   return sqrt(sum);
 }
-template <uint8_t rows, uint8_t columns>
-float Matrix<rows, columns>::L2Norm() const {
-  float sum{0};
-  Matrix<rows, 1> columnMatrix{};
-  for (uint8_t column = 0; column < columns; column++) {
-    this.GetColumn(column, columnMatrix);
-    sum += columnMatrix.EuclideanNorm();
-  }
-  return sqrt(sum);
-}
 
 template <uint8_t rows, uint8_t columns>
 template <uint8_t sub_rows, uint8_t sub_columns, uint8_t row_offset,
@@ -485,20 +475,37 @@ Matrix<sub_rows, sub_columns> Matrix<rows, columns>::SubMatrix() const {
 }
 
 template <uint8_t rows, uint8_t columns>
-template <uint8_t sub_rows, uint8_t sub_columns, uint8_t row_offset,
-          uint8_t column_offset>
+template <uint8_t sub_rows, uint8_t sub_columns>
 void Matrix<rows, columns>::SetSubMatrix(
+    uint8_t rowOffset, uint8_t columnOffset,
     const Matrix<sub_rows, sub_columns> &sub_matrix) {
-  static_assert(sub_rows + row_offset <= rows,
-                "The submatrix you're trying to set is out of bounds (rows)");
-  static_assert(
-      sub_columns + column_offset <= columns,
-      "The submatrix you're trying to set is out of bounds (columns)");
+  int16_t adjustedSubRows = sub_rows;
+  int16_t adjustedSubColumns = sub_columns;
+  int16_t adjustedRowOffset = rowOffset;
+  int16_t adjustedColumnOffset = columnOffset;
 
-  for (uint8_t row_idx{0}; row_idx < sub_rows; row_idx++) {
-    for (uint8_t column_idx{0}; column_idx < sub_columns; column_idx++) {
-      this->matrix[(row_idx + row_offset) * columns + column_idx +
-                   column_offset] = sub_matrix.Get(row_idx, column_idx);
+  // a bunch of safety checks to make sure we don't overflow the matrix
+  if (sub_rows > rows) {
+    adjustedSubRows = rows;
+  }
+  if (sub_columns > columns) {
+    adjustedSubColumns = columns;
+  }
+
+  if (adjustedSubRows + adjustedRowOffset >= rows) {
+    adjustedRowOffset =
+        std::max(0, static_cast<int16_t>(rows) - adjustedSubRows);
+  }
+
+  if (adjustedSubColumns + adjustedColumnOffset >= columns) {
+    adjustedColumnOffset =
+        std::max(0, static_cast<int16_t>(columns) - adjustedSubColumns);
+  }
+
+  for (uint8_t row_idx{0}; row_idx < adjustedSubRows; row_idx++) {
+    for (uint8_t column_idx{0}; column_idx < adjustedSubColumns; column_idx++) {
+      this->matrix[(row_idx + adjustedRowOffset) * columns + column_idx +
+                   adjustedColumnOffset] = sub_matrix.Get(row_idx, column_idx);
     }
   }
 }
@@ -510,33 +517,37 @@ void Matrix<rows, columns>::QRDecomposition(Matrix<rows, columns> &Q,
                                             Matrix<columns, columns> &R) const {
   static_assert(columns <= rows, "QR decomposition requires columns <= rows");
 
-  Matrix<rows, 1> a_col, u, q_col, proj;
   Q.Fill(0);
   R.Fill(0);
+  Matrix<rows, 1> a_col, e, u, Q_column_k{};
+  Matrix<1, rows> a_T, e_T{};
 
-  for (uint8_t k = 0; k < columns; ++k) {
-    this->GetColumn(k, a_col);
+  for (uint8_t column = 0; column < columns; column++) {
+    this->GetColumn(column, a_col);
     u = a_col;
-
-    for (uint8_t j = 0; j < k; ++j) {
-      Q.GetColumn(j, q_col);
-      float r_jk = Matrix<rows, 1>::DotProduct(
-          q_col, u); // FIXED: use u instead of a_col
-      R[j][k] = r_jk;
-
-      proj = q_col * r_jk;
-      u = u - proj;
+    // -----------------------
+    // ----- CALCULATE Q -----
+    // -----------------------
+    for (uint8_t k = 0; k <= column; k++) {
+      Q.GetColumn(k, Q_column_k);
+      Matrix<1, rows> Q_column_k_T = Q_column_k.Transpose();
+      u = u - Q_column_k * (Q_column_k_T * a_col);
     }
-
-    float norm = sqrt(Matrix<rows, 1>::DotProduct(u, u));
-    if (norm < 1e-12f)
-      norm = 1e-12f; // for stability
-
-    for (uint8_t i = 0; i < rows; ++i) {
-      Q[i][k] = u[i][0] / norm;
+    float norm = u.EuclideanNorm();
+    if (norm > 1e-4) {
+      u = u / norm;
+    } else {
+      u.Fill(0);
     }
+    Q.SetSubMatrix(0, column, u);
 
-    R[k][k] = norm;
+    // -----------------------
+    // ----- CALCULATE R -----
+    // -----------------------
+    for (uint8_t k = 0; k <= column; k++) {
+      Q.GetColumn(k, e);
+      R[k][column] = (a_col.Transpose() * e).Get(0, 0);
+    }
   }
 }
 
