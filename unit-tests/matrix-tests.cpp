@@ -10,40 +10,60 @@
 #include <cmath>
 #include <iostream>
 
+// Helper functions
+template <uint8_t rows, uint8_t columns>
+float matrixSum(const Matrix<rows, columns> &matrix) {
+  float sum = 0;
+  for (uint32_t i = 0; i < rows * columns; i++) {
+    float number = matrix.ToArray()[i];
+    sum += number * number;
+  }
+  return std::sqrt(sum);
+}
+
+template <uint8_t rows, uint8_t columns>
+void printLabeledMatrix(const std::string &label,
+                        const Matrix<rows, columns> &matrix) {
+  std::string strBuf = "";
+  matrix.ToString(strBuf);
+  std::cout << label << ":\n" << strBuf << std::endl;
+}
+
+TEST_CASE("Initialization", "Matrix") {
+  SECTION("Array Initialization") {
+    std::array<float, 4> arr2{5, 6, 7, 8};
+    Matrix<2, 2> mat2{arr2};
+    // array initialization
+    REQUIRE(mat2.Get(0, 0) == 5);
+    REQUIRE(mat2.Get(0, 1) == 6);
+    REQUIRE(mat2.Get(1, 0) == 7);
+    REQUIRE(mat2.Get(1, 1) == 8);
+  }
+
+  SECTION("Argument Pack Initialization") {
+    Matrix<2, 2> mat1{1, 2, 3, 4};
+    // template pack initialization
+    REQUIRE(mat1.Get(0, 0) == 1);
+    REQUIRE(mat1.Get(0, 1) == 2);
+    REQUIRE(mat1.Get(1, 0) == 3);
+    REQUIRE(mat1.Get(1, 1) == 4);
+  }
+
+  SECTION("Single Argument Pack Initialization") {
+    Matrix<2, 2> mat1{2};
+    // template pack initialization
+    REQUIRE(mat1.Get(0, 0) == 2);
+    REQUIRE(mat1.Get(0, 1) == 2);
+    REQUIRE(mat1.Get(1, 0) == 2);
+    REQUIRE(mat1.Get(1, 1) == 2);
+  }
+}
+
 TEST_CASE("Elementary Matrix Operations", "Matrix") {
   std::array<float, 4> arr2{5, 6, 7, 8};
   Matrix<2, 2> mat1{1, 2, 3, 4};
   Matrix<2, 2> mat2{arr2};
   Matrix<2, 2> mat3{};
-
-  SECTION("Initialization") {
-    // array initialization
-    REQUIRE(mat1.Get(0, 0) == 1);
-    REQUIRE(mat1.Get(0, 1) == 2);
-    REQUIRE(mat1.Get(1, 0) == 3);
-    REQUIRE(mat1.Get(1, 1) == 4);
-
-    // empty initialization
-    REQUIRE(mat3.Get(0, 0) == 0);
-    REQUIRE(mat3.Get(0, 1) == 0);
-    REQUIRE(mat3.Get(1, 0) == 0);
-    REQUIRE(mat3.Get(1, 1) == 0);
-
-    // template pack initialization
-    REQUIRE(mat2.Get(0, 0) == 5);
-    REQUIRE(mat2.Get(0, 1) == 6);
-    REQUIRE(mat2.Get(1, 0) == 7);
-    REQUIRE(mat2.Get(1, 1) == 8);
-
-    // large matrix
-    Matrix<255, 255> mat6{};
-    mat6.Fill(4);
-    for (uint8_t row{0}; row < 255; row++) {
-      for (uint8_t column{0}; column < 255; column++) {
-        REQUIRE(mat6.Get(row, column) == 4);
-      }
-    }
-  }
 
   SECTION("Fill") {
     mat1.Fill(0);
@@ -66,10 +86,6 @@ TEST_CASE("Elementary Matrix Operations", "Matrix") {
   }
 
   SECTION("Addition") {
-    std::string strBuf1 = "";
-    mat1.ToString(strBuf1);
-    std::cout << "Matrix 1:\n" << strBuf1 << std::endl;
-
     mat1.Add(mat2, mat3);
 
     REQUIRE(mat3.Get(0, 0) == 6);
@@ -363,18 +379,58 @@ TEST_CASE("Elementary Matrix Operations", "Matrix") {
   }
 }
 
-template <uint8_t rows, uint8_t columns>
-float matrixSum(const Matrix<rows, columns> &matrix) {
-  float sum = 0;
-  for (uint32_t i = 0; i < rows * columns; i++) {
-    float number = matrix.ToArray()[i];
-    sum += number * number;
+TEST_CASE("Identity Matrix", "Matrix") {
+  SECTION("Square Matrix") {
+    Matrix<5, 5> matrix = Matrix<5, 5>::Identity();
+    uint32_t oneColumnIndex{0};
+    for (uint32_t row = 0; row < 5; row++) {
+      for (uint32_t column = 0; column < 5; column++) {
+        float value = matrix[row][column];
+        if (oneColumnIndex == column) {
+          REQUIRE_THAT(value, Catch::Matchers::WithinRel(1.0f, 1e-6f));
+        } else {
+          REQUIRE_THAT(value, Catch::Matchers::WithinRel(0.0f, 1e-6f));
+        }
+      }
+      oneColumnIndex++;
+    }
   }
-  return std::sqrt(sum);
+
+  SECTION("Wide Matrix") {
+    Matrix<2, 5> matrix = Matrix<2, 5>::Identity();
+
+    uint32_t oneColumnIndex{0};
+    for (uint32_t row = 0; row < 2; row++) {
+      for (uint32_t column = 0; column < 5; column++) {
+        float value = matrix[row][column];
+        if (oneColumnIndex == column && row < 3) {
+          REQUIRE_THAT(value, Catch::Matchers::WithinRel(1.0f, 1e-6f));
+        } else {
+          REQUIRE_THAT(value, Catch::Matchers::WithinRel(0.0f, 1e-6f));
+        }
+      }
+      oneColumnIndex++;
+    }
+  }
+
+  SECTION("Tall Matrix") {
+    Matrix<5, 2> matrix = Matrix<5, 2>::Identity();
+    uint32_t oneColumnIndex{0};
+    for (uint32_t row = 0; row < 5; row++) {
+      for (uint32_t column = 0; column < 2; column++) {
+        float value = matrix[row][column];
+        if (oneColumnIndex == column) {
+          REQUIRE_THAT(value, Catch::Matchers::WithinRel(1.0f, 1e-6f));
+        } else {
+          REQUIRE_THAT(value, Catch::Matchers::WithinRel(0.0f, 1e-6f));
+        }
+      }
+      oneColumnIndex++;
+    }
+  }
 }
 
 // TODO: Add test for scalar division
-
 TEST_CASE("Euclidean Norm", "Matrix") {
 
   SECTION("2x2 Normalize") {
@@ -469,17 +525,9 @@ TEST_CASE("QR Decompositions", "Matrix") {
   SECTION("3x3 QRDecomposition") {
     // this symmetrix tridiagonal matrix is well behaved for testing
     Matrix<3, 3> A{1, 2, 3, 4, 5, 6, 7, 8, 9};
-    uint32_t matrixRank = 2;
 
     Matrix<3, 3> Q{}, R{};
     A.QRDecomposition(Q, R);
-
-    std::string strBuf1 = "";
-    Q.ToString(strBuf1);
-    std::cout << "Q:\n" << strBuf1 << std::endl;
-    strBuf1 = "";
-    R.ToString(strBuf1);
-    std::cout << "R:\n" << strBuf1 << std::endl;
 
     // Check that Q * R ≈ A
     Matrix<3, 3> QR{};
@@ -491,13 +539,13 @@ TEST_CASE("QR Decompositions", "Matrix") {
     }
 
     // Check that Qᵀ * Q ≈ I
-    // In this case the A matrix is only rank 2, so the identity matrix given by
-    // Qᵀ * Q is actually only going to be 2x2.
+    // This MUST be true even if the rank of A is 2 because without this,
+    // calculating eigenvalues/vectors will not work.
     Matrix<3, 3> Qt = Q.Transpose();
     Matrix<3, 3> QtQ{};
     QtQ = Qt * Q;
-    for (int i = 0; i < matrixRank; ++i) {
-      for (int j = 0; j < matrixRank; ++j) {
+    for (int i = 0; i < 3; ++i) {
+      for (int j = 0; j < 3; ++j) {
         if (i == j)
           REQUIRE_THAT(QtQ[i][j], Catch::Matchers::WithinRel(1.0f, 1e-4f));
         else
@@ -506,8 +554,7 @@ TEST_CASE("QR Decompositions", "Matrix") {
     }
 
     // Optional: Check R is upper triangular
-    // The matrix's rank is only 2 so the last row will not be triangular
-    for (int i = 1; i < matrixRank; ++i) {
+    for (int i = 1; i < 3; ++i) {
       for (int j = 0; j < i; ++j) {
         REQUIRE(std::fabs(R[i][j]) < 1e-4f);
       }

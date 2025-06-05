@@ -13,12 +13,6 @@
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
-#include <type_traits>
-
-template <uint8_t rows, uint8_t columns>
-Matrix<rows, columns>::Matrix(float value) {
-  this->Fill(value);
-}
 
 template <uint8_t rows, uint8_t columns>
 Matrix<rows, columns>::Matrix(const std::array<float, rows * columns> &array) {
@@ -32,6 +26,14 @@ Matrix<rows, columns>::Matrix(Args... args) {
                                static_cast<uint16_t>(columns)};
 
   std::initializer_list<float> initList{static_cast<float>(args)...};
+  // if there is only one value, we actually want to do a fill
+  if (sizeof...(args) == 1) {
+    this->Fill(*initList.begin());
+  }
+  static_assert(sizeof...(args) == arraySize || sizeof...(args) == 1,
+                "You did not provide the right amount of initializers for this "
+                "matrix size");
+
   // choose whichever buffer size is smaller for the copy length
   uint32_t minSize =
       std::min(arraySize, static_cast<uint16_t>(initList.size()));
@@ -39,11 +41,13 @@ Matrix<rows, columns>::Matrix(Args... args) {
 }
 
 template <uint8_t rows, uint8_t columns>
-void Matrix<rows, columns>::Identity() {
-  this->Fill(0);
-  for (uint8_t idx{0}; idx < rows; idx++) {
-    this->matrix[idx * columns + idx] = 1;
+Matrix<rows, columns> Matrix<rows, columns>::Identity() {
+  Matrix<rows, columns> identityMatrix{0};
+  uint32_t minDimension = std::min(rows, columns);
+  for (uint8_t idx{0}; idx < minDimension; idx++) {
+    identityMatrix[idx][idx] = 1;
   }
+  return identityMatrix;
 }
 
 template <uint8_t rows, uint8_t columns>
@@ -564,16 +568,18 @@ void Matrix<rows, columns>::EigenQR(Matrix<rows, rows> &eigenVectors,
                                     uint32_t maxIterations,
                                     float tolerance) const {
   static_assert(rows > 1, "Matrix size must be > 1 for QR iteration");
+  static_assert(rows == columns, "Matrix size must be square for QR iteration");
 
   Matrix<rows, rows> Ak = *this; // Copy original matrix
-  Matrix<rows, rows> QQ{};
-  QQ.Identity();
+  Matrix<rows, rows> QQ{Matrix<rows, rows>::Identity()};
 
   for (uint32_t iter = 0; iter < maxIterations; ++iter) {
-    Matrix<rows, rows> Q, R;
-    Ak.QRDecomposition(Q, R);
+    Matrix<rows, rows> Q, R, shift;
 
-    Ak = R * Q;
+    // QR shift lets us "attack" the first diagonal to speed up the algorithm
+    shift = Matrix<rows, rows>::Identity() * Ak[rows - 1][rows - 1];
+    (Ak - shift).QRDecomposition(Q, R);
+    Ak = R * Q + shift;
     QQ = QQ * Q;
 
     // Check convergence: off-diagonal norm

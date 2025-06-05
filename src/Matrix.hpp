@@ -19,11 +19,6 @@ public:
   Matrix() = default;
 
   /**
-   * @brief Create a matrix but fill all of its entries with one value
-   */
-  Matrix(float value);
-
-  /**
    * @brief Initialize a matrix with an array
    */
   Matrix(const std::array<float, rows * columns> &array);
@@ -39,9 +34,9 @@ public:
   template <typename... Args> Matrix(Args... args);
 
   /**
-   * @brief set the matrix diagonals to 1 and all other values to 0
+   * @brief Create an identity matrix
    */
-  void Identity();
+  static Matrix<rows, columns> Identity();
 
   /**
    * @brief Set all elements in this to value
