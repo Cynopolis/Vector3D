@@ -6,7 +6,9 @@ add_subdirectory(unit-tests)
 
 set(CMAKE_CXX_STANDARD 11)
 
-add_compile_options(-fdiagnostics-color=always -Wall -Wextra -Wpedantic)
+add_compile_options(-Wall -Wextra -Wpedantic)
+add_compile_options (-fdiagnostics-color=always)
+set(CMAKE_COLOR_DIAGNOSTICS ON)
 
 include(FetchContent)
  

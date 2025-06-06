@@ -3,7 +3,7 @@ This matrix math library is focused on embedded development and avoids any heap 
 It uses templates to pre-allocate matrices on the stack.
 
 There are still several operations that are works in progress such as:
-TODO: Add a function to calculate eigenvalues/vectors
-TODO: Add a function to compute RREF
-TODO: Add a function for SVD decomposition
-TODO: Add a function for LQ decomposition
+- Add a function to calculate eigenvalues/vectors
+- Add a function to compute RREF
+- Add a function for SVD decomposition
+- Add a function for LQ decomposition

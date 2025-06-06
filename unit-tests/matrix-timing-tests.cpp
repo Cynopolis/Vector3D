@@ -99,7 +99,7 @@ TEST_CASE("Timing Tests", "Matrix") {
 
   SECTION("Normalize") {
     for (uint32_t i{0}; i < 10000; i++) {
-      mat1.Normalize(mat3);
+      mat3 = mat1 / mat1.EuclideanNorm();
     }
   }
 

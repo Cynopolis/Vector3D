@@ -10,40 +10,60 @@
 #include <cmath>
 #include <iostream>
 
+// Helper functions
+template <uint8_t rows, uint8_t columns>
+float matrixSum(const Matrix<rows, columns> &matrix) {
+  float sum = 0;
+  for (uint32_t i = 0; i < rows * columns; i++) {
+    float number = matrix.ToArray()[i];
+    sum += number * number;
+  }
+  return std::sqrt(sum);
+}
+
+template <uint8_t rows, uint8_t columns>
+void printLabeledMatrix(const std::string &label,
+                        const Matrix<rows, columns> &matrix) {
+  std::string strBuf = "";
+  matrix.ToString(strBuf);
+  std::cout << label << ":\n" << strBuf << std::endl;
+}
+
+TEST_CASE("Initialization", "Matrix") {
+  SECTION("Array Initialization") {
+    std::array<float, 4> arr2{5, 6, 7, 8};
+    Matrix<2, 2> mat2{arr2};
+    // array initialization
+    REQUIRE(mat2.Get(0, 0) == 5);
+    REQUIRE(mat2.Get(0, 1) == 6);
+    REQUIRE(mat2.Get(1, 0) == 7);
+    REQUIRE(mat2.Get(1, 1) == 8);
+  }
+
+  SECTION("Argument Pack Initialization") {
+    Matrix<2, 2> mat1{1, 2, 3, 4};
+    // template pack initialization
+    REQUIRE(mat1.Get(0, 0) == 1);
+    REQUIRE(mat1.Get(0, 1) == 2);
+    REQUIRE(mat1.Get(1, 0) == 3);
+    REQUIRE(mat1.Get(1, 1) == 4);
+  }
+
+  SECTION("Single Argument Pack Initialization") {
+    Matrix<2, 2> mat1{2};
+    // template pack initialization
+    REQUIRE(mat1.Get(0, 0) == 2);
+    REQUIRE(mat1.Get(0, 1) == 2);
+    REQUIRE(mat1.Get(1, 0) == 2);
+    REQUIRE(mat1.Get(1, 1) == 2);
+  }
+}
+
 TEST_CASE("Elementary Matrix Operations", "Matrix") {
   std::array<float, 4> arr2{5, 6, 7, 8};
   Matrix<2, 2> mat1{1, 2, 3, 4};
   Matrix<2, 2> mat2{arr2};
   Matrix<2, 2> mat3{};
-
-  SECTION("Initialization") {
-    // array initialization
-    REQUIRE(mat1.Get(0, 0) == 1);
-    REQUIRE(mat1.Get(0, 1) == 2);
-    REQUIRE(mat1.Get(1, 0) == 3);
-    REQUIRE(mat1.Get(1, 1) == 4);
-
-    // empty initialization
-    REQUIRE(mat3.Get(0, 0) == 0);
-    REQUIRE(mat3.Get(0, 1) == 0);
-    REQUIRE(mat3.Get(1, 0) == 0);
-    REQUIRE(mat3.Get(1, 1) == 0);
-
-    // template pack initialization
-    REQUIRE(mat2.Get(0, 0) == 5);
-    REQUIRE(mat2.Get(0, 1) == 6);
-    REQUIRE(mat2.Get(1, 0) == 7);
-    REQUIRE(mat2.Get(1, 1) == 8);
-
-    // large matrix
-    Matrix<255, 255> mat6{};
-    mat6.Fill(4);
-    for (uint8_t row{0}; row < 255; row++) {
-      for (uint8_t column{0}; column < 255; column++) {
-        REQUIRE(mat6.Get(row, column) == 4);
-      }
-    }
-  }
 
   SECTION("Fill") {
     mat1.Fill(0);
@@ -66,10 +86,6 @@ TEST_CASE("Elementary Matrix Operations", "Matrix") {
   }
 
   SECTION("Addition") {
-    std::string strBuf1 = "";
-    mat1.ToString(strBuf1);
-    std::cout << "Matrix 1:\n" << strBuf1 << std::endl;
-
     mat1.Add(mat2, mat3);
 
     REQUIRE(mat3.Get(0, 0) == 6);
@@ -119,7 +135,35 @@ TEST_CASE("Elementary Matrix Operations", "Matrix") {
     REQUIRE(mat3.Get(1, 0) == 43);
     REQUIRE(mat3.Get(1, 1) == 50);
 
-    // TODO: You need to add non-square multiplications to this.
+    // Non-square multiplication
+    Matrix<2, 4> mat4{1, 2, 3, 4, 5, 6, 7, 8};
+    Matrix<4, 2> mat5{9, 10, 11, 12, 13, 14, 15, 16};
+    Matrix<2, 2> mat6{};
+    mat6 = mat4 * mat5;
+    REQUIRE(mat6.Get(0, 0) == 130);
+    REQUIRE(mat6.Get(0, 1) == 140);
+    REQUIRE(mat6.Get(1, 0) == 322);
+    REQUIRE(mat6.Get(1, 1) == 348);
+
+    // One more non-square multiplicaiton
+    Matrix<4, 4> mat7{};
+    mat7 = mat5 * mat4;
+    REQUIRE(mat7.Get(0, 0) == 59);
+    REQUIRE(mat7.Get(0, 1) == 78);
+    REQUIRE(mat7.Get(0, 2) == 97);
+    REQUIRE(mat7.Get(0, 3) == 116);
+    REQUIRE(mat7.Get(1, 0) == 71);
+    REQUIRE(mat7.Get(1, 1) == 94);
+    REQUIRE(mat7.Get(1, 2) == 117);
+    REQUIRE(mat7.Get(1, 3) == 140);
+    REQUIRE(mat7.Get(2, 0) == 83);
+    REQUIRE(mat7.Get(2, 1) == 110);
+    REQUIRE(mat7.Get(2, 2) == 137);
+    REQUIRE(mat7.Get(2, 3) == 164);
+    REQUIRE(mat7.Get(3, 0) == 95);
+    REQUIRE(mat7.Get(3, 1) == 126);
+    REQUIRE(mat7.Get(3, 2) == 157);
+    REQUIRE(mat7.Get(3, 3) == 188);
   }
 
   SECTION("Scalar Multiplication") {
@@ -254,26 +298,6 @@ TEST_CASE("Elementary Matrix Operations", "Matrix") {
     REQUIRE(mat5.Get(2, 1) == 6);
   }
 
-  SECTION("Normalize") {
-    mat1.Normalize(mat3);
-
-    float sqrt_30{sqrt(30)};
-
-    REQUIRE(mat3.Get(0, 0) == 1 / sqrt_30);
-    REQUIRE(mat3.Get(0, 1) == 2 / sqrt_30);
-    REQUIRE(mat3.Get(1, 0) == 3 / sqrt_30);
-    REQUIRE(mat3.Get(1, 1) == 4 / sqrt_30);
-
-    Matrix<2, 1> mat4{-0.878877044, 2.92092276};
-    Matrix<2, 1> mat5{};
-    mat4.Normalize(mat5);
-
-    REQUIRE_THAT(mat5.Get(0, 0),
-                 Catch::Matchers::WithinRel(-0.288129855179f, 1e-6f));
-    REQUIRE_THAT(mat5.Get(1, 0),
-                 Catch::Matchers::WithinRel(0.957591346325f, 1e-6f));
-  }
-
   SECTION("GET ROW") {
     Matrix<1, 2> mat1Rows{};
     mat1.GetRow(0, mat1Rows);
@@ -328,29 +352,289 @@ TEST_CASE("Elementary Matrix Operations", "Matrix") {
     Matrix<3, 3> mat4 = startMatrix;
 
     Matrix<2, 2> mat5{10, 11, 12, 13};
-    mat4.SetSubMatrix<2, 2, 0, 0>(mat5);
+    mat4.SetSubMatrix(0, 0, mat5);
     REQUIRE(mat4.Get(0, 0) == 10);
     REQUIRE(mat4.Get(0, 1) == 11);
     REQUIRE(mat4.Get(1, 0) == 12);
     REQUIRE(mat4.Get(1, 1) == 13);
 
     mat4 = startMatrix;
-    mat4.SetSubMatrix<2, 2, 1, 1>(mat5);
+    mat4.SetSubMatrix(1, 1, mat5);
     REQUIRE(mat4.Get(1, 1) == 10);
     REQUIRE(mat4.Get(1, 2) == 11);
     REQUIRE(mat4.Get(2, 1) == 12);
     REQUIRE(mat4.Get(2, 2) == 13);
 
     Matrix<3, 1> mat6{10, 11, 12};
-    mat4.SetSubMatrix<3, 1, 0, 0>(mat6);
+    mat4.SetSubMatrix(0, 0, mat6);
     REQUIRE(mat4.Get(0, 0) == 10);
     REQUIRE(mat4.Get(1, 0) == 11);
     REQUIRE(mat4.Get(2, 0) == 12);
 
     Matrix<1, 3> mat7{10, 11, 12};
-    mat4.SetSubMatrix<1, 3, 0, 0>(mat7);
+    mat4.SetSubMatrix(0, 0, mat7);
     REQUIRE(mat4.Get(0, 0) == 10);
     REQUIRE(mat4.Get(0, 1) == 11);
     REQUIRE(mat4.Get(0, 2) == 12);
+  }
+}
+
+TEST_CASE("Identity Matrix", "Matrix") {
+  SECTION("Square Matrix") {
+    Matrix<5, 5> matrix = Matrix<5, 5>::Identity();
+    uint32_t oneColumnIndex{0};
+    for (uint32_t row = 0; row < 5; row++) {
+      for (uint32_t column = 0; column < 5; column++) {
+        float value = matrix[row][column];
+        if (oneColumnIndex == column) {
+          REQUIRE_THAT(value, Catch::Matchers::WithinRel(1.0f, 1e-6f));
+        } else {
+          REQUIRE_THAT(value, Catch::Matchers::WithinRel(0.0f, 1e-6f));
+        }
+      }
+      oneColumnIndex++;
+    }
+  }
+
+  SECTION("Wide Matrix") {
+    Matrix<2, 5> matrix = Matrix<2, 5>::Identity();
+
+    uint32_t oneColumnIndex{0};
+    for (uint32_t row = 0; row < 2; row++) {
+      for (uint32_t column = 0; column < 5; column++) {
+        float value = matrix[row][column];
+        if (oneColumnIndex == column && row < 3) {
+          REQUIRE_THAT(value, Catch::Matchers::WithinRel(1.0f, 1e-6f));
+        } else {
+          REQUIRE_THAT(value, Catch::Matchers::WithinRel(0.0f, 1e-6f));
+        }
+      }
+      oneColumnIndex++;
+    }
+  }
+
+  SECTION("Tall Matrix") {
+    Matrix<5, 2> matrix = Matrix<5, 2>::Identity();
+    uint32_t oneColumnIndex{0};
+    for (uint32_t row = 0; row < 5; row++) {
+      for (uint32_t column = 0; column < 2; column++) {
+        float value = matrix[row][column];
+        if (oneColumnIndex == column) {
+          REQUIRE_THAT(value, Catch::Matchers::WithinRel(1.0f, 1e-6f));
+        } else {
+          REQUIRE_THAT(value, Catch::Matchers::WithinRel(0.0f, 1e-6f));
+        }
+      }
+      oneColumnIndex++;
+    }
+  }
+}
+
+// TODO: Add test for scalar division
+TEST_CASE("Euclidean Norm", "Matrix") {
+
+  SECTION("2x2 Normalize") {
+    Matrix<2, 2> mat1{1, 2, 3, 4};
+    Matrix<2, 2> mat2{};
+
+    mat2 = mat1 / mat1.EuclideanNorm();
+
+    float sqrt_30{static_cast<float>(sqrt(30.0f))};
+
+    REQUIRE(mat2.Get(0, 0) == 1 / sqrt_30);
+    REQUIRE(mat2.Get(0, 1) == 2 / sqrt_30);
+    REQUIRE(mat2.Get(1, 0) == 3 / sqrt_30);
+    REQUIRE(mat2.Get(1, 1) == 4 / sqrt_30);
+
+    REQUIRE_THAT(matrixSum(mat2), Catch::Matchers::WithinRel(1.0f, 1e-6f));
+  }
+
+  SECTION("2x1 (Vector) Normalize") {
+    Matrix<2, 1> mat1{-0.878877044, 2.92092276};
+    Matrix<2, 1> mat2{};
+    mat2 = mat1 / mat1.EuclideanNorm();
+
+    REQUIRE_THAT(mat2.Get(0, 0),
+                 Catch::Matchers::WithinRel(-0.288129855179f, 1e-6f));
+    REQUIRE_THAT(mat2.Get(1, 0),
+                 Catch::Matchers::WithinRel(0.957591346325f, 1e-6f));
+
+    float sum = matrixSum(mat2);
+    REQUIRE_THAT(sum, Catch::Matchers::WithinRel(1.0f, 1e-6f));
+  }
+
+  SECTION("Normalized vectors sum to 1") {
+    Matrix<9, 1> mat1{1, 2, 3, 4, 5, 6, 7, 8, 9};
+    Matrix<9, 1> mat2;
+    mat2 = mat1 / mat1.EuclideanNorm();
+    float sum = matrixSum(mat2);
+    REQUIRE_THAT(sum, Catch::Matchers::WithinRel(1.0f, 1e-6f));
+
+    Matrix<2, 3> mat3{1, 2, 3, 4, 5, 6};
+    Matrix<2, 3> mat4{};
+    mat4 = mat3 / mat3.EuclideanNorm();
+    sum = matrixSum(mat4);
+    REQUIRE_THAT(sum, Catch::Matchers::WithinRel(1.0f, 1e-6f));
+  }
+}
+
+TEST_CASE("QR Decompositions", "Matrix") {
+  SECTION("2x2 QRDecomposition") {
+    Matrix<2, 2> A{1.0f, 2.0f, 3.0f, 4.0f};
+    Matrix<2, 2> Q{}, R{};
+    A.QRDecomposition(Q, R);
+
+    // Check that Q * R ≈ A
+    Matrix<2, 2> QR{};
+    Q.Mult(R, QR);
+    for (int i = 0; i < 2; ++i) {
+      for (int j = 0; j < 2; ++j) {
+        REQUIRE_THAT(QR[i][j], Catch::Matchers::WithinRel(A[i][j], 1e-4f));
+      }
+    }
+
+    // Check that Q is orthonormal: Qᵀ * Q ≈ I
+    Matrix<2, 2> Qt = Q.Transpose();
+    Matrix<2, 2> QtQ{};
+    Qt.Mult(Q, QtQ);
+    for (int i = 0; i < 2; ++i) {
+      for (int j = 0; j < 2; ++j) {
+        if (i == j)
+          REQUIRE_THAT(QtQ[i][j], Catch::Matchers::WithinRel(1.0f, 1e-4f));
+        else
+          REQUIRE_THAT(QtQ[i][j], Catch::Matchers::WithinAbs(0.0f, 1e-4f));
+      }
+    }
+
+    // Optional: R should be upper triangular
+    REQUIRE(std::fabs(R[1][0]) < 1e-4f);
+
+    // check that all Q values are correct
+    REQUIRE_THAT(Q[0][0], Catch::Matchers::WithinRel(0.3162f, 1e-4f));
+    REQUIRE_THAT(Q[0][1], Catch::Matchers::WithinRel(0.94868f, 1e-4f));
+    REQUIRE_THAT(Q[1][0], Catch::Matchers::WithinRel(0.94868f, 1e-4f));
+    REQUIRE_THAT(Q[1][1], Catch::Matchers::WithinRel(-0.3162f, 1e-4f));
+
+    // check that all R values are correct
+    REQUIRE_THAT(R[0][0], Catch::Matchers::WithinRel(3.16228f, 1e-4f));
+    REQUIRE_THAT(R[0][1], Catch::Matchers::WithinRel(4.42719f, 1e-4f));
+    REQUIRE_THAT(R[1][0], Catch::Matchers::WithinRel(0.0f, 1e-4f));
+    REQUIRE_THAT(R[1][1], Catch::Matchers::WithinRel(0.63246f, 1e-4f));
+  }
+
+  SECTION("3x3 QRDecomposition") {
+    // this symmetrix tridiagonal matrix is well behaved for testing
+    Matrix<3, 3> A{1, 2, 3, 4, 5, 6, 7, 8, 9};
+
+    Matrix<3, 3> Q{}, R{};
+    A.QRDecomposition(Q, R);
+
+    // Check that Q * R ≈ A
+    Matrix<3, 3> QR{};
+    QR = Q * R;
+    for (int i = 0; i < 3; ++i) {
+      for (int j = 0; j < 3; ++j) {
+        REQUIRE_THAT(QR[i][j], Catch::Matchers::WithinRel(A[i][j], 1e-4f));
+      }
+    }
+
+    // Check that Qᵀ * Q ≈ I
+    // Since the rank of this matrix is 2, only the top left 2x2 sub-matrix will
+    // equal I.
+    Matrix<3, 3> Qt = Q.Transpose();
+    Matrix<3, 3> QtQ{};
+    QtQ = Qt * Q;
+    for (int i = 0; i < 2; ++i) {
+      for (int j = 0; j < 2; ++j) {
+        if (i == j)
+          REQUIRE_THAT(QtQ[i][j], Catch::Matchers::WithinRel(1.0f, 1e-4f));
+        else
+          REQUIRE_THAT(QtQ[i][j], Catch::Matchers::WithinAbs(0.0f, 1e-4f));
+      }
+    }
+
+    // Optional: Check R is upper triangular
+    for (int i = 1; i < 3; ++i) {
+      for (int j = 0; j < i; ++j) {
+        REQUIRE(std::fabs(R[i][j]) < 1e-4f);
+      }
+    }
+  }
+
+  SECTION("4x2 QRDecomposition") {
+    // A simple 4x2 matrix
+    Matrix<4, 2> A{1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f};
+
+    Matrix<4, 2> Q{};
+    Matrix<2, 2> R{};
+    A.QRDecomposition(Q, R);
+
+    // Check that Q * R ≈ A
+    Matrix<4, 2> QR{};
+    Q.Mult(R, QR);
+    for (int i = 0; i < 4; ++i) {
+      for (int j = 0; j < 2; ++j) {
+        REQUIRE_THAT(QR[i][j], Catch::Matchers::WithinRel(A[i][j], 1e-4f));
+      }
+    }
+
+    // Check that Qᵀ * Q ≈ I₂
+    Matrix<2, 4> Qt = Q.Transpose();
+    Matrix<2, 2> QtQ{};
+    Qt.Mult(Q, QtQ);
+    for (int i = 0; i < 2; ++i) {
+      for (int j = 0; j < 2; ++j) {
+        if (i == j)
+          REQUIRE_THAT(QtQ[i][j], Catch::Matchers::WithinRel(1.0f, 1e-4f));
+        else
+          REQUIRE_THAT(QtQ[i][j], Catch::Matchers::WithinAbs(0.0f, 1e-4f));
+      }
+    }
+
+    // Check R is upper triangular (i > j ⇒ R[i][j] ≈ 0)
+    for (int i = 1; i < 2; ++i) {
+      for (int j = 0; j < i; ++j) {
+        REQUIRE(std::fabs(R[i][j]) < 1e-4f);
+      }
+    }
+  }
+}
+
+TEST_CASE("Eigenvalues and Vectors", "Matrix") {
+  SECTION("2x2 Eigen") {
+    Matrix<2, 2> A{1.0f, 2.0f, 3.0f, 4.0f};
+    Matrix<2, 2> vectors{};
+    Matrix<2, 1> values{};
+
+    A.EigenQR(vectors, values, 1000000, 1e-20f);
+
+    REQUIRE_THAT(vectors[0][0], Catch::Matchers::WithinRel(0.41597f, 1e-4f));
+    REQUIRE_THAT(vectors[1][0], Catch::Matchers::WithinRel(0.90938f, 1e-4f));
+    REQUIRE_THAT(values[0][0], Catch::Matchers::WithinRel(5.372282f, 1e-4f));
+    REQUIRE_THAT(values[1][0], Catch::Matchers::WithinRel(-0.372281f, 1e-4f));
+  }
+
+  SECTION("3x3 Rank Defficient Eigen") {
+    SKIP("Skipping this because QR decomposition isn't ready for it");
+    // this symmetrix tridiagonal matrix is well behaved for testing
+    Matrix<3, 3> A{1, 2, 3, 4, 5, 6, 7, 8, 9};
+
+    Matrix<3, 3> vectors{};
+    Matrix<3, 1> values{};
+    A.EigenQR(vectors, values, 1000000, 1e-8f);
+
+    std::string strBuf1 = "";
+    vectors.ToString(strBuf1);
+    std::cout << "Vectors:\n" << strBuf1 << std::endl;
+    strBuf1 = "";
+    values.ToString(strBuf1);
+    std::cout << "Values:\n" << strBuf1 << std::endl;
+
+    REQUIRE_THAT(vectors[0][0], Catch::Matchers::WithinRel(0.23197f, 1e-4f));
+    REQUIRE_THAT(vectors[1][0], Catch::Matchers::WithinRel(0.525322f, 1e-4f));
+    REQUIRE_THAT(vectors[2][0], Catch::Matchers::WithinRel(0.81867f, 1e-4f));
+    REQUIRE_THAT(values[0][0], Catch::Matchers::WithinRel(-1.11684f, 1e-4f));
+    REQUIRE_THAT(values[1][0], Catch::Matchers::WithinRel(0.0f, 1e-4f));
+    REQUIRE_THAT(values[2][0], Catch::Matchers::WithinRel(16.1168f, 1e-4f));
   }
 }

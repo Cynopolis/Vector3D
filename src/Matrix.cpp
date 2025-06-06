@@ -1,3 +1,10 @@
+// This #ifndef section makes clangd happy so that it can properly do type hints
+// in this file
+#ifndef MATRIX_H_
+#define MATRIX_H_
+#include "Matrix.hpp"
+#endif
+
 #ifdef MATRIX_H_ // since the .cpp file has to be included by the .hpp file this
                  // will evaluate to true
 #include "Matrix.hpp"
@@ -5,29 +12,28 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
-#include <type_traits>
 #include <cstring>
 
 template <uint8_t rows, uint8_t columns>
-Matrix<rows, columns>::Matrix(float value)
-{
-  this->Fill(value);
-}
-
-template <uint8_t rows, uint8_t columns>
-Matrix<rows, columns>::Matrix(const std::array<float, rows * columns> &array)
-{
+Matrix<rows, columns>::Matrix(const std::array<float, rows * columns> &array) {
   this->setMatrixToArray(array);
 }
 
 template <uint8_t rows, uint8_t columns>
 template <typename... Args>
-Matrix<rows, columns>::Matrix(Args... args)
-{
+Matrix<rows, columns>::Matrix(Args... args) {
   constexpr uint16_t arraySize{static_cast<uint16_t>(rows) *
                                static_cast<uint16_t>(columns)};
 
   std::initializer_list<float> initList{static_cast<float>(args)...};
+  // if there is only one value, we actually want to do a fill
+  if (sizeof...(args) == 1) {
+    this->Fill(*initList.begin());
+  }
+  static_assert(sizeof...(args) == arraySize || sizeof...(args) == 1,
+                "You did not provide the right amount of initializers for this "
+                "matrix size");
+
   // choose whichever buffer size is smaller for the copy length
   uint32_t minSize =
       std::min(arraySize, static_cast<uint16_t>(initList.size()));
@@ -35,22 +41,19 @@ Matrix<rows, columns>::Matrix(Args... args)
 }
 
 template <uint8_t rows, uint8_t columns>
-void Matrix<rows, columns>::Identity()
-{
-  this->Fill(0);
-  for (uint8_t idx{0}; idx < rows; idx++)
-  {
-    this->matrix[idx * columns + idx] = 1;
+Matrix<rows, columns> Matrix<rows, columns>::Identity() {
+  Matrix<rows, columns> identityMatrix{0};
+  uint32_t minDimension = std::min(rows, columns);
+  for (uint8_t idx{0}; idx < minDimension; idx++) {
+    identityMatrix[idx][idx] = 1;
   }
+  return identityMatrix;
 }
 
 template <uint8_t rows, uint8_t columns>
-Matrix<rows, columns>::Matrix(const Matrix<rows, columns> &other)
-{
-  for (uint8_t row_idx{0}; row_idx < rows; row_idx++)
-  {
-    for (uint8_t column_idx{0}; column_idx < columns; column_idx++)
-    {
+Matrix<rows, columns>::Matrix(const Matrix<rows, columns> &other) {
+  for (uint8_t row_idx{0}; row_idx < rows; row_idx++) {
+    for (uint8_t column_idx{0}; column_idx < columns; column_idx++) {
       this->matrix[row_idx * columns + column_idx] =
           other.Get(row_idx, column_idx);
     }
@@ -59,21 +62,15 @@ Matrix<rows, columns>::Matrix(const Matrix<rows, columns> &other)
 
 template <uint8_t rows, uint8_t columns>
 void Matrix<rows, columns>::setMatrixToArray(
-    const std::array<float, rows * columns> &array)
-{
-  for (uint8_t row_idx{0}; row_idx < rows; row_idx++)
-  {
-    for (uint8_t column_idx{0}; column_idx < columns; column_idx++)
-    {
+    const std::array<float, rows * columns> &array) {
+  for (uint8_t row_idx{0}; row_idx < rows; row_idx++) {
+    for (uint8_t column_idx{0}; column_idx < columns; column_idx++) {
       uint16_t array_idx =
           static_cast<uint16_t>(row_idx) * static_cast<uint16_t>(columns) +
           static_cast<uint16_t>(column_idx);
-      if (array_idx < array.size())
-      {
+      if (array_idx < array.size()) {
         this->matrix[row_idx * columns + column_idx] = array[array_idx];
-      }
-      else
-      {
+      } else {
         this->matrix[row_idx * columns + column_idx] = 0;
       }
     }
@@ -83,12 +80,9 @@ void Matrix<rows, columns>::setMatrixToArray(
 template <uint8_t rows, uint8_t columns>
 Matrix<rows, columns> &
 Matrix<rows, columns>::Add(const Matrix<rows, columns> &other,
-                           Matrix<rows, columns> &result) const
-{
-  for (uint8_t row_idx{0}; row_idx < rows; row_idx++)
-  {
-    for (uint8_t column_idx{0}; column_idx < columns; column_idx++)
-    {
+                           Matrix<rows, columns> &result) const {
+  for (uint8_t row_idx{0}; row_idx < rows; row_idx++) {
+    for (uint8_t column_idx{0}; column_idx < columns; column_idx++) {
       result[row_idx][column_idx] =
           this->Get(row_idx, column_idx) + other.Get(row_idx, column_idx);
     }
@@ -99,12 +93,9 @@ Matrix<rows, columns>::Add(const Matrix<rows, columns> &other,
 template <uint8_t rows, uint8_t columns>
 Matrix<rows, columns> &
 Matrix<rows, columns>::Sub(const Matrix<rows, columns> &other,
-                           Matrix<rows, columns> &result) const
-{
-  for (uint8_t row_idx{0}; row_idx < rows; row_idx++)
-  {
-    for (uint8_t column_idx{0}; column_idx < columns; column_idx++)
-    {
+                           Matrix<rows, columns> &result) const {
+  for (uint8_t row_idx{0}; row_idx < rows; row_idx++) {
+    for (uint8_t column_idx{0}; column_idx < columns; column_idx++) {
       result[row_idx][column_idx] =
           this->Get(row_idx, column_idx) - other.Get(row_idx, column_idx);
     }
@@ -117,18 +108,15 @@ template <uint8_t rows, uint8_t columns>
 template <uint8_t other_columns>
 Matrix<rows, other_columns> &
 Matrix<rows, columns>::Mult(const Matrix<columns, other_columns> &other,
-                            Matrix<rows, other_columns> &result) const
-{
+                            Matrix<rows, other_columns> &result) const {
   // allocate some buffers for all of our dot products
   Matrix<1, columns> this_row;
   Matrix<columns, 1> other_column;
 
-  for (uint8_t row_idx{0}; row_idx < rows; row_idx++)
-  {
+  for (uint8_t row_idx{0}; row_idx < rows; row_idx++) {
     // get our row
     this->GetRow(row_idx, this_row);
-    for (uint8_t column_idx{0}; column_idx < columns; column_idx++)
-    {
+    for (uint8_t column_idx{0}; column_idx < other_columns; column_idx++) {
       // get the other matrix'ss column
       other.GetColumn(column_idx, other_column);
 
@@ -143,12 +131,9 @@ Matrix<rows, columns>::Mult(const Matrix<columns, other_columns> &other,
 
 template <uint8_t rows, uint8_t columns>
 Matrix<rows, columns> &
-Matrix<rows, columns>::Mult(float scalar, Matrix<rows, columns> &result) const
-{
-  for (uint8_t row_idx{0}; row_idx < rows; row_idx++)
-  {
-    for (uint8_t column_idx{0}; column_idx < columns; column_idx++)
-    {
+Matrix<rows, columns>::Mult(float scalar, Matrix<rows, columns> &result) const {
+  for (uint8_t row_idx{0}; row_idx < rows; row_idx++) {
+    for (uint8_t column_idx{0}; column_idx < columns; column_idx++) {
       result[row_idx][column_idx] = this->Get(row_idx, column_idx) * scalar;
     }
   }
@@ -157,9 +142,7 @@ Matrix<rows, columns>::Mult(float scalar, Matrix<rows, columns> &result) const
 }
 
 template <uint8_t rows, uint8_t columns>
-Matrix<rows, columns>
-Matrix<rows, columns>::Invert() const
-{
+Matrix<rows, columns> Matrix<rows, columns>::Invert() const {
   // since all matrix sizes have to be statically specified at compile time we
   // can do this
   static_assert(rows == columns,
@@ -169,8 +152,7 @@ Matrix<rows, columns>::Invert() const
   // unfortunately we can't calculate this at compile time so we'll just reurn
   // zeros
   float determinant{this->Det()};
-  if (determinant == 0)
-  {
+  if (determinant == 0) {
     // you can't invert a matrix with a negative determinant
     result.Fill(0);
     return result;
@@ -195,14 +177,10 @@ Matrix<rows, columns>::Invert() const
 }
 
 template <uint8_t rows, uint8_t columns>
-Matrix<columns, rows>
-Matrix<rows, columns>::Transpose() const
-{
+Matrix<columns, rows> Matrix<rows, columns>::Transpose() const {
   Matrix<columns, rows> result{};
-  for (uint8_t column_idx{0}; column_idx < rows; column_idx++)
-  {
-    for (uint8_t row_idx{0}; row_idx < columns; row_idx++)
-    {
+  for (uint8_t column_idx{0}; column_idx < rows; column_idx++) {
+    for (uint8_t row_idx{0}; row_idx < columns; row_idx++) {
       result[row_idx][column_idx] = this->Get(column_idx, row_idx);
     }
   }
@@ -214,24 +192,19 @@ Matrix<rows, columns>::Transpose() const
 // the fastest way to calculate a 2x2 matrix determinant
 // template <>
 // inline float Matrix<0, 0>::Det() const { return 1e+6; }
-template <>
-inline float Matrix<1, 1>::Det() const { return this->matrix[0]; }
-template <>
-inline float Matrix<2, 2>::Det() const
-{
+template <> inline float Matrix<1, 1>::Det() const { return this->matrix[0]; }
+template <> inline float Matrix<2, 2>::Det() const {
   return this->matrix[0] * this->matrix[3] - this->matrix[1] * this->matrix[2];
 }
 
 template <uint8_t rows, uint8_t columns>
-float Matrix<rows, columns>::Det() const
-{
+float Matrix<rows, columns>::Det() const {
   static_assert(rows == columns,
                 "You can't take the determinant of a non-square matrix.");
 
   Matrix<rows - 1, columns - 1> MinorMatrix{};
   float determinant{0};
-  for (uint8_t column_idx{0}; column_idx < columns; column_idx++)
-  {
+  for (uint8_t column_idx{0}; column_idx < columns; column_idx++) {
     // for odd indices the sign is negative
     float sign = (column_idx % 2 == 0) ? 1 : -1;
     determinant += sign * this->matrix[column_idx] *
@@ -244,12 +217,9 @@ float Matrix<rows, columns>::Det() const
 template <uint8_t rows, uint8_t columns>
 Matrix<rows, columns> &
 Matrix<rows, columns>::ElementMultiply(const Matrix<rows, columns> &other,
-                                       Matrix<rows, columns> &result) const
-{
-  for (uint8_t row_idx{0}; row_idx < rows; row_idx++)
-  {
-    for (uint8_t column_idx{0}; column_idx < columns; column_idx++)
-    {
+                                       Matrix<rows, columns> &result) const {
+  for (uint8_t row_idx{0}; row_idx < rows; row_idx++) {
+    for (uint8_t column_idx{0}; column_idx < columns; column_idx++) {
       result[row_idx][column_idx] =
           this->Get(row_idx, column_idx) * other.Get(row_idx, column_idx);
     }
@@ -261,12 +231,9 @@ Matrix<rows, columns>::ElementMultiply(const Matrix<rows, columns> &other,
 template <uint8_t rows, uint8_t columns>
 Matrix<rows, columns> &
 Matrix<rows, columns>::ElementDivide(const Matrix<rows, columns> &other,
-                                     Matrix<rows, columns> &result) const
-{
-  for (uint8_t row_idx{0}; row_idx < rows; row_idx++)
-  {
-    for (uint8_t column_idx{0}; column_idx < columns; column_idx++)
-    {
+                                     Matrix<rows, columns> &result) const {
+  for (uint8_t row_idx{0}; row_idx < rows; row_idx++) {
+    for (uint8_t column_idx{0}; column_idx < columns; column_idx++) {
       result[row_idx][column_idx] =
           this->Get(row_idx, column_idx) / other.Get(row_idx, column_idx);
     }
@@ -277,10 +244,8 @@ Matrix<rows, columns>::ElementDivide(const Matrix<rows, columns> &other,
 
 template <uint8_t rows, uint8_t columns>
 float Matrix<rows, columns>::Get(uint8_t row_index,
-                                 uint8_t column_index) const
-{
-  if (row_index > rows - 1 || column_index > columns - 1)
-  {
+                                 uint8_t column_index) const {
+  if (row_index > rows - 1 || column_index > columns - 1) {
     return 1e+10; // TODO: We should throw something here instead of failing
                   // quietly
   }
@@ -290,8 +255,7 @@ float Matrix<rows, columns>::Get(uint8_t row_index,
 template <uint8_t rows, uint8_t columns>
 Matrix<1, columns> &
 Matrix<rows, columns>::GetRow(uint8_t row_index,
-                              Matrix<1, columns> &row) const
-{
+                              Matrix<1, columns> &row) const {
   memcpy(&(row[0]), this->matrix.begin() + row_index * columns,
          columns * sizeof(float));
 
@@ -301,10 +265,8 @@ Matrix<rows, columns>::GetRow(uint8_t row_index,
 template <uint8_t rows, uint8_t columns>
 Matrix<rows, 1> &
 Matrix<rows, columns>::GetColumn(uint8_t column_index,
-                                 Matrix<rows, 1> &column) const
-{
-  for (uint8_t row_idx{0}; row_idx < rows; row_idx++)
-  {
+                                 Matrix<rows, 1> &column) const {
+  for (uint8_t row_idx{0}; row_idx < rows; row_idx++) {
     column[row_idx][0] = this->Get(row_idx, column_index);
   }
 
@@ -312,17 +274,13 @@ Matrix<rows, columns>::GetColumn(uint8_t column_index,
 }
 
 template <uint8_t rows, uint8_t columns>
-void Matrix<rows, columns>::ToString(std::string &stringBuffer) const
-{
-  for (uint8_t row_idx{0}; row_idx < rows; row_idx++)
-  {
+void Matrix<rows, columns>::ToString(std::string &stringBuffer) const {
+  for (uint8_t row_idx{0}; row_idx < rows; row_idx++) {
     stringBuffer += "|";
-    for (uint8_t column_idx{0}; column_idx < columns; column_idx++)
-    {
+    for (uint8_t column_idx{0}; column_idx < columns; column_idx++) {
       stringBuffer +=
           std::to_string(this->matrix[row_idx * columns + column_idx]);
-      if (column_idx != columns - 1)
-      {
+      if (column_idx != columns - 1) {
         stringBuffer += "\t";
       }
     }
@@ -331,11 +289,14 @@ void Matrix<rows, columns>::ToString(std::string &stringBuffer) const
 }
 
 template <uint8_t rows, uint8_t columns>
-std::array<float, columns> &Matrix<rows, columns>::
-operator[](uint8_t row_index)
-{
-  if (row_index > rows - 1)
-  {
+const float *Matrix<rows, columns>::ToArray() const {
+  return this->matrix.data();
+}
+
+template <uint8_t rows, uint8_t columns>
+std::array<float, columns> &
+Matrix<rows, columns>::operator[](uint8_t row_index) {
+  if (row_index > rows - 1) {
     // TODO: We should throw something here instead of failing quietly.
     row_index = 0;
   }
@@ -346,9 +307,8 @@ operator[](uint8_t row_index)
 }
 
 template <uint8_t rows, uint8_t columns>
-Matrix<rows, columns> &Matrix<rows, columns>::
-operator=(const Matrix<rows, columns> &other)
-{
+Matrix<rows, columns> &
+Matrix<rows, columns>::operator=(const Matrix<rows, columns> &other) {
   memcpy(this->matrix.begin(), other.matrix.begin(),
          rows * columns * sizeof(float));
 
@@ -357,18 +317,16 @@ operator=(const Matrix<rows, columns> &other)
 }
 
 template <uint8_t rows, uint8_t columns>
-Matrix<rows, columns> Matrix<rows, columns>::
-operator+(const Matrix<rows, columns> &other) const
-{
+Matrix<rows, columns>
+Matrix<rows, columns>::operator+(const Matrix<rows, columns> &other) const {
   Matrix<rows, columns> buffer{};
   this->Add(other, buffer);
   return buffer;
 }
 
 template <uint8_t rows, uint8_t columns>
-Matrix<rows, columns> Matrix<rows, columns>::
-operator-(const Matrix<rows, columns> &other) const
-{
+Matrix<rows, columns>
+Matrix<rows, columns>::operator-(const Matrix<rows, columns> &other) const {
   Matrix<rows, columns> buffer{};
   this->Sub(other, buffer);
   return buffer;
@@ -376,30 +334,42 @@ operator-(const Matrix<rows, columns> &other) const
 
 template <uint8_t rows, uint8_t columns>
 template <uint8_t other_columns>
-Matrix<rows, other_columns> Matrix<rows, columns>::
-operator*(const Matrix<columns, other_columns> &other) const
-{
+Matrix<rows, other_columns> Matrix<rows, columns>::operator*(
+    const Matrix<columns, other_columns> &other) const {
   Matrix<rows, other_columns> buffer{};
   this->Mult(other, buffer);
   return buffer;
 }
 
 template <uint8_t rows, uint8_t columns>
-Matrix<rows, columns> Matrix<rows, columns>::operator*(float scalar) const
-{
+Matrix<rows, columns> Matrix<rows, columns>::operator*(float scalar) const {
   Matrix<rows, columns> buffer{};
   this->Mult(scalar, buffer);
   return buffer;
 }
 
 template <uint8_t rows, uint8_t columns>
+Matrix<rows, columns> Matrix<rows, columns>::operator/(float scalar) const {
+  Matrix<rows, columns> buffer = *this;
+  if (scalar == 0) {
+    buffer.Fill(1e+10);
+    return buffer;
+  }
+
+  for (uint8_t row = 0; row < rows; row++) {
+    for (uint8_t column = 0; column < columns; column++) {
+      buffer[row][column] /= scalar;
+    }
+  }
+  return buffer;
+}
+
+template <uint8_t rows, uint8_t columns>
 template <uint8_t vector_size>
 float Matrix<rows, columns>::DotProduct(const Matrix<1, vector_size> &vec1,
-                                        const Matrix<1, vector_size> &vec2)
-{
+                                        const Matrix<1, vector_size> &vec2) {
   float sum{0};
-  for (uint8_t i{0}; i < vector_size; i++)
-  {
+  for (uint8_t i{0}; i < vector_size; i++) {
     sum += vec1.Get(0, i) * vec2.Get(0, i);
   }
 
@@ -409,11 +379,9 @@ float Matrix<rows, columns>::DotProduct(const Matrix<1, vector_size> &vec1,
 template <uint8_t rows, uint8_t columns>
 template <uint8_t vector_size>
 float Matrix<rows, columns>::DotProduct(const Matrix<vector_size, 1> &vec1,
-                                        const Matrix<vector_size, 1> &vec2)
-{
+                                        const Matrix<vector_size, 1> &vec2) {
   float sum{0};
-  for (uint8_t i{0}; i < vector_size; i++)
-  {
+  for (uint8_t i{0}; i < vector_size; i++) {
     sum += vec1.Get(i, 0) * vec2.Get(i, 0);
   }
 
@@ -421,12 +389,9 @@ float Matrix<rows, columns>::DotProduct(const Matrix<vector_size, 1> &vec1,
 }
 
 template <uint8_t rows, uint8_t columns>
-void Matrix<rows, columns>::Fill(float value)
-{
-  for (uint8_t row_idx{0}; row_idx < rows; row_idx++)
-  {
-    for (uint8_t column_idx{0}; column_idx < columns; column_idx++)
-    {
+void Matrix<rows, columns>::Fill(float value) {
+  for (uint8_t row_idx{0}; row_idx < rows; row_idx++) {
+    for (uint8_t column_idx{0}; column_idx < columns; column_idx++) {
       this->matrix[row_idx * columns + column_idx] = value;
     }
   }
@@ -434,14 +399,11 @@ void Matrix<rows, columns>::Fill(float value)
 
 template <uint8_t rows, uint8_t columns>
 Matrix<rows, columns> &
-Matrix<rows, columns>::MatrixOfMinors(Matrix<rows, columns> &result) const
-{
+Matrix<rows, columns>::MatrixOfMinors(Matrix<rows, columns> &result) const {
   Matrix<rows - 1, columns - 1> MinorMatrix{};
 
-  for (uint8_t row_idx{0}; row_idx < rows; row_idx++)
-  {
-    for (uint8_t column_idx{0}; column_idx < columns; column_idx++)
-    {
+  for (uint8_t row_idx{0}; row_idx < rows; row_idx++) {
+    for (uint8_t column_idx{0}; column_idx < columns; column_idx++) {
       this->MinorMatrix(MinorMatrix, row_idx, column_idx);
       result[row_idx][column_idx] = MinorMatrix.Det();
     }
@@ -453,20 +415,15 @@ Matrix<rows, columns>::MatrixOfMinors(Matrix<rows, columns> &result) const
 template <uint8_t rows, uint8_t columns>
 Matrix<rows - 1, columns - 1> &
 Matrix<rows, columns>::MinorMatrix(Matrix<rows - 1, columns - 1> &result,
-                                   uint8_t row_idx, uint8_t column_idx) const
-{
+                                   uint8_t row_idx, uint8_t column_idx) const {
   std::array<float, (rows - 1) * (columns - 1)> subArray{};
   uint16_t array_idx{0};
-  for (uint8_t row_iter{0}; row_iter < rows; row_iter++)
-  {
-    if (row_iter == row_idx)
-    {
+  for (uint8_t row_iter{0}; row_iter < rows; row_iter++) {
+    if (row_iter == row_idx) {
       continue;
     }
-    for (uint8_t column_iter{0}; column_iter < columns; column_iter++)
-    {
-      if (column_iter == column_idx)
-      {
+    for (uint8_t column_iter{0}; column_iter < columns; column_iter++) {
+      if (column_iter == column_idx) {
         continue;
       }
       subArray[array_idx] = this->Get(row_iter, column_iter);
@@ -480,12 +437,9 @@ Matrix<rows, columns>::MinorMatrix(Matrix<rows - 1, columns - 1> &result,
 
 template <uint8_t rows, uint8_t columns>
 Matrix<rows, columns> &
-Matrix<rows, columns>::adjugate(Matrix<rows, columns> &result) const
-{
-  for (uint8_t row_iter{0}; row_iter < rows; row_iter++)
-  {
-    for (uint8_t column_iter{0}; column_iter < columns; column_iter++)
-    {
+Matrix<rows, columns>::adjugate(Matrix<rows, columns> &result) const {
+  for (uint8_t row_iter{0}; row_iter < rows; row_iter++) {
+    for (uint8_t column_iter{0}; column_iter < columns; column_iter++) {
       float sign = ((row_iter + 1) % 2) == 0 ? -1 : 1;
       sign *= ((column_iter + 1) % 2) == 0 ? -1 : 1;
       result[column_iter][row_iter] = this->Get(row_iter, column_iter) * sign;
@@ -496,55 +450,34 @@ Matrix<rows, columns>::adjugate(Matrix<rows, columns> &result) const
 }
 
 template <uint8_t rows, uint8_t columns>
-Matrix<rows, columns> &
-Matrix<rows, columns>::Normalize(Matrix<rows, columns> &result) const
-{
+float Matrix<rows, columns>::EuclideanNorm() const {
+
   float sum{0};
-  for (uint8_t row_idx{0}; row_idx < rows; row_idx++)
-  {
-    for (uint8_t column_idx{0}; column_idx < columns; column_idx++)
-    {
+  for (uint8_t row_idx{0}; row_idx < rows; row_idx++) {
+    for (uint8_t column_idx{0}; column_idx < columns; column_idx++) {
       float val{this->Get(row_idx, column_idx)};
       sum += val * val;
     }
   }
 
-  if (sum == 0)
-  {
-    // this wouldn't do anything anyways
-    result.Fill(1e+6);
-    return result;
-  }
-
-  sum = sqrt(sum);
-
-  for (uint8_t row_idx{0}; row_idx < rows; row_idx++)
-  {
-    for (uint8_t column_idx{0}; column_idx < columns; column_idx++)
-    {
-      result[row_idx][column_idx] = this->Get(row_idx, column_idx) / sum;
-    }
-  }
-
-  return result;
+  return sqrt(sum);
 }
 
 template <uint8_t rows, uint8_t columns>
-template <uint8_t sub_rows, uint8_t sub_columns, uint8_t row_offset, uint8_t column_offset>
-Matrix<sub_rows, sub_columns> Matrix<rows, columns>::SubMatrix() const
-{
+template <uint8_t sub_rows, uint8_t sub_columns, uint8_t row_offset,
+          uint8_t column_offset>
+Matrix<sub_rows, sub_columns> Matrix<rows, columns>::SubMatrix() const {
   // static assert that sub_rows + row_offset <= rows
   // static assert that sub_columns + column_offset <= columns
   static_assert(sub_rows + row_offset <= rows,
                 "The submatrix you're trying to get is out of bounds (rows)");
-  static_assert(sub_columns + column_offset <= columns,
-                "The submatrix you're trying to get is out of bounds (columns)");
+  static_assert(
+      sub_columns + column_offset <= columns,
+      "The submatrix you're trying to get is out of bounds (columns)");
 
   Matrix<sub_rows, sub_columns> buffer{};
-  for (uint8_t row_idx{0}; row_idx < sub_rows; row_idx++)
-  {
-    for (uint8_t column_idx{0}; column_idx < sub_columns; column_idx++)
-    {
+  for (uint8_t row_idx{0}; row_idx < sub_rows; row_idx++) {
+    for (uint8_t column_idx{0}; column_idx < sub_columns; column_idx++) {
       buffer[row_idx][column_idx] =
           this->Get(row_idx + row_offset, column_idx + column_offset);
     }
@@ -553,21 +486,121 @@ Matrix<sub_rows, sub_columns> Matrix<rows, columns>::SubMatrix() const
 }
 
 template <uint8_t rows, uint8_t columns>
-template <uint8_t sub_rows, uint8_t sub_columns, uint8_t row_offset, uint8_t column_offset>
-void Matrix<rows, columns>::SetSubMatrix(const Matrix<sub_rows, sub_columns> &sub_matrix)
-{
-  static_assert(sub_rows + row_offset <= rows,
-                "The submatrix you're trying to set is out of bounds (rows)");
-  static_assert(sub_columns + column_offset <= columns,
-                "The submatrix you're trying to set is out of bounds (columns)");
+template <uint8_t sub_rows, uint8_t sub_columns>
+void Matrix<rows, columns>::SetSubMatrix(
+    uint8_t rowOffset, uint8_t columnOffset,
+    const Matrix<sub_rows, sub_columns> &sub_matrix) {
+  int16_t adjustedSubRows = sub_rows;
+  int16_t adjustedSubColumns = sub_columns;
+  int16_t adjustedRowOffset = rowOffset;
+  int16_t adjustedColumnOffset = columnOffset;
 
-  for (uint8_t row_idx{0}; row_idx < sub_rows; row_idx++)
-  {
-    for (uint8_t column_idx{0}; column_idx < sub_columns; column_idx++)
-    {
-      this->matrix[(row_idx + row_offset) * columns + column_idx + column_offset] = sub_matrix.Get(row_idx, column_idx);
+  // a bunch of safety checks to make sure we don't overflow the matrix
+  if (sub_rows > rows) {
+    adjustedSubRows = rows;
+  }
+  if (sub_columns > columns) {
+    adjustedSubColumns = columns;
+  }
+
+  if (adjustedSubRows + adjustedRowOffset >= rows) {
+    adjustedRowOffset =
+        std::max(0, static_cast<int16_t>(rows) - adjustedSubRows);
+  }
+
+  if (adjustedSubColumns + adjustedColumnOffset >= columns) {
+    adjustedColumnOffset =
+        std::max(0, static_cast<int16_t>(columns) - adjustedSubColumns);
+  }
+
+  for (uint8_t row_idx{0}; row_idx < adjustedSubRows; row_idx++) {
+    for (uint8_t column_idx{0}; column_idx < adjustedSubColumns; column_idx++) {
+      this->matrix[(row_idx + adjustedRowOffset) * columns + column_idx +
+                   adjustedColumnOffset] = sub_matrix.Get(row_idx, column_idx);
     }
   }
+}
+
+// QR decomposition: decomposes this matrix A into Q and R
+// Assumes square matrix
+template <uint8_t rows, uint8_t columns>
+void Matrix<rows, columns>::QRDecomposition(Matrix<rows, columns> &Q,
+                                            Matrix<columns, columns> &R) const {
+  static_assert(columns <= rows, "QR decomposition requires columns <= rows");
+
+  Q.Fill(0);
+  R.Fill(0);
+  Matrix<rows, 1> a_col, e, u, Q_column_k{};
+  Matrix<1, rows> a_T, e_T{};
+
+  for (uint8_t column = 0; column < columns; column++) {
+    this->GetColumn(column, a_col);
+    u = a_col;
+    // -----------------------
+    // ----- CALCULATE Q -----
+    // -----------------------
+    for (uint8_t k = 0; k <= column; k++) {
+      Q.GetColumn(k, Q_column_k);
+      Matrix<1, rows> Q_column_k_T = Q_column_k.Transpose();
+      u = u - Q_column_k * (Q_column_k_T * a_col);
+    }
+    float norm = u.EuclideanNorm();
+    if (norm > 1e-4) {
+      u = u / norm;
+    } else {
+      u.Fill(0);
+    }
+    Q.SetSubMatrix(0, column, u);
+
+    // -----------------------
+    // ----- CALCULATE R -----
+    // -----------------------
+    for (uint8_t k = 0; k <= column; k++) {
+      Q.GetColumn(k, e);
+      R[k][column] = (a_col.Transpose() * e).Get(0, 0);
+    }
+  }
+}
+
+template <uint8_t rows, uint8_t columns>
+void Matrix<rows, columns>::EigenQR(Matrix<rows, rows> &eigenVectors,
+                                    Matrix<rows, 1> &eigenValues,
+                                    uint32_t maxIterations,
+                                    float tolerance) const {
+  static_assert(rows > 1, "Matrix size must be > 1 for QR iteration");
+  static_assert(rows == columns, "Matrix size must be square for QR iteration");
+
+  Matrix<rows, rows> Ak = *this; // Copy original matrix
+  Matrix<rows, rows> QQ{Matrix<rows, rows>::Identity()};
+  Matrix<rows, rows> shift{0};
+
+  for (uint32_t iter = 0; iter < maxIterations; ++iter) {
+    Matrix<rows, rows> Q, R;
+
+    // // QR shift lets us "attack" the first diagonal to speed up the algorithm
+    // shift = Matrix<rows, rows>::Identity() * Ak[rows - 1][rows - 1];
+    (Ak - shift).QRDecomposition(Q, R);
+    Ak = R * Q + shift;
+    QQ = QQ * Q;
+
+    // Check convergence: off-diagonal norm
+    float offDiagSum = 0.0f;
+    for (uint32_t row = 1; row < rows; row++) {
+      for (uint32_t column = 0; column < row; column++) {
+        offDiagSum += fabs(Ak[row][column]);
+      }
+    }
+
+    if (offDiagSum < tolerance) {
+      break;
+    }
+  }
+
+  // Diagonal elements are the eigenvalues
+  for (uint8_t i = 0; i < rows; i++) {
+    eigenValues[i][0] = Ak[i][i];
+  }
+  eigenVectors = QQ;
 }
 
 #endif // MATRIX_H_

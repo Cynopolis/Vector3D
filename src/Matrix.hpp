@@ -1,5 +1,4 @@
-#ifndef MATRIX_H_
-#define MATRIX_H_
+#pragma once
 
 #include <array>
 #include <cstdint>
@@ -20,11 +19,6 @@ public:
   Matrix() = default;
 
   /**
-   * @brief Create a matrix but fill all of its entries with one value
-   */
-  Matrix(float value);
-
-  /**
    * @brief Initialize a matrix with an array
    */
   Matrix(const std::array<float, rows * columns> &array);
@@ -40,9 +34,9 @@ public:
   template <typename... Args> Matrix(Args... args);
 
   /**
-   * @brief set the matrix diagonals to 1 and all other values to 0
+   * @brief Create an identity matrix
    */
-  void Identity();
+  static Matrix<rows, columns> Identity();
 
   /**
    * @brief Set all elements in this to value
@@ -129,10 +123,11 @@ public:
   Matrix<columns, rows> Transpose() const;
 
   /**
-   * @brief reduce the matrix so the sum of its elements equal 1
+   * @brief Returns the euclidean magnitude of the matrix. Also known as the L2
+   * norm
    * @param result a buffer to store the result into
    */
-  Matrix<rows, columns> &Normalize(Matrix<rows, columns> &result) const;
+  float EuclideanNorm() const;
 
   /**
    * @brief Get a row from the matrix
@@ -159,7 +154,15 @@ public:
    */
   constexpr uint8_t GetColumnSize() { return columns; }
 
+  /**
+   * @brief Write a string representation of the matrix into the buffer
+   */
   void ToString(std::string &stringBuffer) const;
+
+  /**
+   * @brief Returns the internal representation of the matrix as an array
+   */
+  const float *ToArray() const;
 
   /**
    * @brief Get an element from the matrix
@@ -193,13 +196,15 @@ public:
 
   Matrix<rows, columns> operator*(float scalar) const;
 
+  Matrix<rows, columns> operator/(float scalar) const;
+
   template <uint8_t sub_rows, uint8_t sub_columns, uint8_t row_offset,
             uint8_t column_offset>
   Matrix<sub_rows, sub_columns> SubMatrix() const;
 
-  template <uint8_t sub_rows, uint8_t sub_columns, uint8_t row_offset,
-            uint8_t column_offset>
-  void SetSubMatrix(const Matrix<sub_rows, sub_columns> &sub_matrix);
+  template <uint8_t sub_rows, uint8_t sub_columns>
+  void SetSubMatrix(uint8_t rowOffset, uint8_t columnOffset,
+                    const Matrix<sub_rows, sub_columns> &sub_matrix);
 
   /**
    * @brief take the dot product of the two vectors
@@ -216,6 +221,28 @@ public:
     return vec1.Get(0, 0) * vec2.Get(0, 0);
   }
 
+  /**
+   * @brief Performs QR decomposition on this matrix
+   * @param Q a buffer that will contain Q after the function completes
+   * @param R a buffer that will contain R after the function completes
+   */
+  void QRDecomposition(Matrix<rows, columns> &Q,
+                       Matrix<columns, columns> &R) const;
+
+  /**
+   * @brief Uses QR decomposition to efficiently calculate the eigenvectors
+   * and values of this matrix
+   * @param eigenVectors a buffer that will contain the eigenvectors fo this
+   * matrix
+   * @param eigenValues a buffer that will contain the eigenValues fo this
+   * matrix
+   * @param maxIterations the number of iterations to perform before giving
+   * up on reaching the given tolerance
+   * @param tolerance the level of accuracy to obtain before stopping.
+   */
+  void EigenQR(Matrix<rows, rows> &eigenVectors, Matrix<rows, 1> &eigenValues,
+               uint32_t maxIterations = 1000, float tolerance = 1e-6f) const;
+
 protected:
   std::array<float, rows * columns> matrix;
 
@@ -225,6 +252,6 @@ private:
   void setMatrixToArray(const std::array<float, rows * columns> &array);
 };
 
+#ifndef MATRIX_H_
 #include "Matrix.cpp"
-
 #endif // MATRIX_H_
