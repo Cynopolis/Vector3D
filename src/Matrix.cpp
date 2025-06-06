@@ -572,12 +572,13 @@ void Matrix<rows, columns>::EigenQR(Matrix<rows, rows> &eigenVectors,
 
   Matrix<rows, rows> Ak = *this; // Copy original matrix
   Matrix<rows, rows> QQ{Matrix<rows, rows>::Identity()};
+  Matrix<rows, rows> shift{0};
 
   for (uint32_t iter = 0; iter < maxIterations; ++iter) {
-    Matrix<rows, rows> Q, R, shift;
+    Matrix<rows, rows> Q, R;
 
-    // QR shift lets us "attack" the first diagonal to speed up the algorithm
-    shift = Matrix<rows, rows>::Identity() * Ak[rows - 1][rows - 1];
+    // // QR shift lets us "attack" the first diagonal to speed up the algorithm
+    // shift = Matrix<rows, rows>::Identity() * Ak[rows - 1][rows - 1];
     (Ak - shift).QRDecomposition(Q, R);
     Ak = R * Q + shift;
     QQ = QQ * Q;
