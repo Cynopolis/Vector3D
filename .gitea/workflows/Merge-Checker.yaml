@@ -41,7 +41,7 @@ jobs:
           mkdir -p unit-tests/timing-results
           if [ -x build/unit-tests/matrix-timing-tests ]; then
             echo "Running matrix-timing-tests with timing"
-            ./build/unit-tests/matrix-timing-tests -d yes &> unit-tests/timing-results/matrix-timing-tests.txt
+            /usr/bin/time -v build/unit-tests/matrix-timing-tests -d yes &> unit-tests/timing-results/matrix-timing-tests.txt
             cat unit-tests/timing-results/matrix-timing-tests.txt
           else
             echo "matrix-timing-tests executable not found or not executable"
