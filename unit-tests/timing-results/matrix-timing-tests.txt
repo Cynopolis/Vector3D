@@ -1,56 +1,36 @@
-Randomness seeded to: 2444679151
-0.180 s: Addition
-0.180 s: Timing Tests
-0.177 s: Subtraction
-0.177 s: Timing Tests
-1.868 s: Multiplication
-1.868 s: Timing Tests
-0.127 s: Scalar Multiplication
-0.127 s: Timing Tests
-0.173 s: Element Multiply
-0.173 s: Timing Tests
-0.178 s: Element Divide
-0.178 s: Timing Tests
-0.172 s: Minor Matrix
-0.172 s: Timing Tests
-0.103 s: Determinant
-0.103 s: Timing Tests
-0.411 s: Matrix of Minors
-0.411 s: Timing Tests
-0.109 s: Invert
-0.109 s: Timing Tests
-0.122 s: Transpose
-0.122 s: Timing Tests
-0.190 s: Normalize
-0.190 s: Timing Tests
-0.006 s: GET ROW
-0.006 s: Timing Tests
-0.235 s: GET COLUMN
-0.235 s: Timing Tests
+Running matrix-timing-tests with timing
+Randomness seeded to: 3567651885
+1.857 s: Addition
+1.857 s: Timing Tests
+1.788 s: Subtraction
+1.788 s: Timing Tests
+1.929 s: Multiplication
+1.929 s: Timing Tests
+1.268 s: Scalar Multiplication
+1.268 s: Timing Tests
+1.798 s: Element Multiply
+1.798 s: Timing Tests
+1.802 s: Element Divide
+1.803 s: Timing Tests
+1.553 s: Minor Matrix
+1.554 s: Timing Tests
+1.009 s: Determinant
+1.009 s: Timing Tests
+4.076 s: Matrix of Minors
+4.076 s: Timing Tests
+1.066 s: Invert
+1.066 s: Timing Tests
+1.246 s: Transpose
+1.246 s: Timing Tests
+2.284 s: Normalize
+2.284 s: Timing Tests
+0.606 s: GET ROW
+0.606 s: Timing Tests
+24.629 s: GET COLUMN
+24.630 s: Timing Tests
+3.064 s: QR Decomposition
+3.064 s: Timing Tests
 ===============================================================================
 test cases: 1 | 1 passed
 assertions: - none -
 
-	Command being timed: "build/unit-tests/matrix-timing-tests -d yes"
-	User time (seconds): 4.05
-	System time (seconds): 0.00
-	Percent of CPU this job got: 100%
-	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:04.05
-	Average shared text size (kbytes): 0
-	Average unshared data size (kbytes): 0
-	Average stack size (kbytes): 0
-	Average total size (kbytes): 0
-	Maximum resident set size (kbytes): 3200
-	Average resident set size (kbytes): 0
-	Major (requiring I/O) page faults: 184
-	Minor (reclaiming a frame) page faults: 171
-	Voluntary context switches: 1
-	Involuntary context switches: 26
-	Swaps: 0
-	File system inputs: 12
-	File system outputs: 1
-	Socket messages sent: 0
-	Socket messages received: 0
-	Signals delivered: 0
-	Page size (bytes): 4096
-	Exit status: 0
